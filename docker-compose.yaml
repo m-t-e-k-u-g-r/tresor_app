@@ -1,0 +1,19 @@
+services:
+  database:
+    image: mariadb:latest
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=1234
+      - MYSQL_DATABASE=tresordb
+    networks:
+      - dev
+    volumes:
+      - ./tresorbackend/tresordb.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - data:/var/lib/mysql
+
+networks:
+  dev:
+
+volumes:
+  data:
