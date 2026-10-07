@@ -1,0 +1,17 @@
+services:
+  devcontainer:
+    image: ubuntu
+
+  database:
+    image: postgres:18.0
+    environment:
+      POSTGRES_USER: tresor_app_dev
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: tresor_app_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - data:/var/lib/postgresql/docker
+
+volumes:
+  data:

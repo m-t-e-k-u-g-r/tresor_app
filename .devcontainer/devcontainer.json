@@ -1,12 +1,10 @@
 // Default Ubuntu-based DevContainer Template.
 // For more customization options, see https://containers.dev/implementors/json_reference
 {
-  name: "Default",
-  image: "ubuntu:latest",
+  name: "Tresor App",
+  dockerComposeFile: "docker-compose.yaml",
+  service: "devcontainer",
   forwardPorts: [3000, 8080],
-  "runArgs": [
-    "--network=tresor_app_dev",
-  ],
 
   customizations : {
     // Configure JetBrains IDE-specific properties
