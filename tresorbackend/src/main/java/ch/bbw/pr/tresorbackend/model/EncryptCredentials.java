@@ -13,7 +13,7 @@ import lombok.*;
 @AllArgsConstructor
 @ToString
 public class EncryptCredentials {
-   private long userId;
+   private Integer userId;
    private String email;
    @NotEmpty(message="encryption password id is required.")
    private String encryptPassword;

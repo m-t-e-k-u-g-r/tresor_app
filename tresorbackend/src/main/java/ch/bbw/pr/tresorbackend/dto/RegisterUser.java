@@ -1,9 +1,8 @@
-package ch.bbw.pr.tresorbackend.model;
+package ch.bbw.pr.tresorbackend.dto;
 
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.Value;
 
 /**
  * RegisterUser
