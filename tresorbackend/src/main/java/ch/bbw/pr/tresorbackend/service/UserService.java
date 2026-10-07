@@ -1,6 +1,7 @@
 package ch.bbw.pr.tresorbackend.service;
 
-import ch.bbw.pr.tresorbackend.model.User;
+import ch.bbw.pr.tresorbackend.entities.User;
+
 import java.util.List;
 
 /**
@@ -10,7 +11,7 @@ import java.util.List;
 public interface UserService {
    User createUser(User user);
 
-   User getUserById(Long userId);
+   User getUserById(Integer userId);
 
    User findByEmail(String email);
 
@@ -18,5 +19,5 @@ public interface UserService {
 
    User updateUser(User user);
 
-   boolean deleteUser(Long userId);
+   boolean deleteUser(Integer userId);
 }
