@@ -1,6 +1,5 @@
 package ch.bbw.pr.tresorbackend.service.impl;
 
-import ch.bbw.pr.tresorbackend.dto.CreateSecretRequest;
 import ch.bbw.pr.tresorbackend.dto.NoteSecretDto;
 import ch.bbw.pr.tresorbackend.entities.NoteSecret;
 import ch.bbw.pr.tresorbackend.mappers.NoteSecretMapper;
@@ -31,28 +30,33 @@ public class NoteSecretServiceImpl {
                 .toList(), null);
     }
 
-    public void createSecret(CreateSecretRequest<NoteSecretDto> secret) {
-        NoteSecret noteSecret = noteSecretMapper.toEntity(secret.getSecret());
+    public void createSecret(NoteSecretDto secret) {
+        NoteSecret noteSecret = noteSecretMapper.toEntity(secret);
         noteSecretRepository.save(noteSecret);
     }
 
-    public NoteSecretDto getSecretById(Long secretId) {
-        NoteSecret secret = noteSecretRepository.findById(secretId)
-                .orElseThrow();
-        return noteSecretMapper.toDto(secret);
+    public NoteSecretDto getSecretByIdAndUserId(Long secretId, Integer userId) {
+        NoteSecret secret = noteSecretRepository.findByIdAndUser_Id(secretId, userId);
+        return secret != null ? noteSecretMapper.toDto(secret) : null;
     }
 
-    public NoteSecretDto updateSecret(Long secretId, NoteSecretDto secret) {
-        NoteSecret noteSecret = SafeDbCall.safeDbCall(() -> noteSecretRepository.findById(secretId)
-                .orElseThrow(), null);
-        assert noteSecret != null;
+    public NoteSecretDto updateSecretByIdAndUserId(Long secretId, Integer userId, NoteSecretDto secret) {
+        NoteSecret noteSecret = SafeDbCall.safeDbCall(() -> noteSecretRepository.findByIdAndUser_Id(secretId, userId), null);
+        if (noteSecret == null) {
+            return null;
+        }
         noteSecret.setTitle(secret.getTitle());
         noteSecret.setContent(secret.getContent());
         noteSecretRepository.save(noteSecret);
         return noteSecretMapper.toDto(noteSecret);
     }
 
-    public void deleteSecret(Long secretId) {
-        SafeDbCall.safeDbCall(() -> noteSecretRepository.deleteById(secretId));
+    public void deleteSecretByIdAndUserId(Long secretId, Integer userId) {
+        SafeDbCall.safeDbCall(() -> {
+            NoteSecret secret = noteSecretRepository.findByIdAndUser_Id(secretId, userId);
+            if (secret != null) {
+                noteSecretRepository.delete(secret);
+            }
+        });
     }
 }

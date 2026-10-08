@@ -1,6 +1,5 @@
 package ch.bbw.pr.tresorbackend.service.impl;
 
-import ch.bbw.pr.tresorbackend.dto.CreateSecretRequest;
 import ch.bbw.pr.tresorbackend.dto.CreditCardSecretDto;
 import ch.bbw.pr.tresorbackend.entities.CreditcardSecret;
 import ch.bbw.pr.tresorbackend.mappers.CreditCardSecretMapper;
@@ -31,21 +30,21 @@ public class CreditCardSecretServiceImpl {
                 .toList(), null);
     }
 
-    public void createSecret(CreateSecretRequest<CreditCardSecretDto> secret) {
-        CreditcardSecret creditcardSecret = creditCardSecretMapper.toEntity(secret.getSecret());
+    public void createSecret(CreditCardSecretDto secret) {
+        CreditcardSecret creditcardSecret = creditCardSecretMapper.toEntity(secret);
         SafeDbCall.safeDbCall(() -> creditCardSecretRepository.save(creditcardSecret));
     }
 
-    public CreditCardSecretDto getSecretById(Long secretId) {
-        CreditcardSecret secret = SafeDbCall.safeDbCall(() -> creditCardSecretRepository.findById(secretId)
-                .orElseThrow(), null);
-        return creditCardSecretMapper.toDto(secret);
+    public CreditCardSecretDto getSecretByIdAndUserId(Long secretId, Integer userId) {
+        CreditcardSecret secret = SafeDbCall.safeDbCall(() -> creditCardSecretRepository.findByIdAndUser_Id(secretId, userId), null);
+        return secret != null ? creditCardSecretMapper.toDto(secret) : null;
     }
     
-    public CreditCardSecretDto updateSecret(Long secretId, CreditCardSecretDto secret) {
-        CreditcardSecret creditcardSecret = SafeDbCall.safeDbCall(() -> creditCardSecretRepository.findById(secretId)
-                .orElseThrow(), null);
-        assert creditcardSecret != null;
+    public CreditCardSecretDto updateSecretByIdAndUserId(Long secretId, Integer userId, CreditCardSecretDto secret) {
+        CreditcardSecret creditcardSecret = SafeDbCall.safeDbCall(() -> creditCardSecretRepository.findByIdAndUser_Id(secretId, userId), null);
+        if (creditcardSecret == null) {
+            return null;
+        }
         creditcardSecret.setCardType(secret.getCardType());
         creditcardSecret.setCardNumber(secret.getCardNumber());
         creditcardSecret.setCvv(secret.getCvv());
@@ -54,7 +53,12 @@ public class CreditCardSecretServiceImpl {
         return creditCardSecretMapper.toDto(creditcardSecret);
     }
 
-    public void deleteSecret(Long secretId) {
-        SafeDbCall.safeDbCall(() -> creditCardSecretRepository.deleteById(secretId));
+    public void deleteSecretByIdAndUserId(Long secretId, Integer userId) {
+        SafeDbCall.safeDbCall(() -> {
+            CreditcardSecret secret = creditCardSecretRepository.findByIdAndUser_Id(secretId, userId);
+            if (secret != null) {
+                creditCardSecretRepository.delete(secret);
+            }
+        });
     }
 }

@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface NoteSecretRepository extends JpaRepository<NoteSecret, Long> {
     List<NoteSecret> findAllByUser_Id(Integer userId);
+    NoteSecret findByIdAndUser_Id(Long id, Integer userId);
 }

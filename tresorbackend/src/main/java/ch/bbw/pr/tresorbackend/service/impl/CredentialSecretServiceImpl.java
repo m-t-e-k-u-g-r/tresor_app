@@ -1,6 +1,5 @@
 package ch.bbw.pr.tresorbackend.service.impl;
 
-import ch.bbw.pr.tresorbackend.dto.CreateSecretRequest;
 import ch.bbw.pr.tresorbackend.dto.CredentialSecretDto;
 import ch.bbw.pr.tresorbackend.entities.CredentialSecret;
 import ch.bbw.pr.tresorbackend.mappers.CredentialSecretMapper;
@@ -31,28 +30,34 @@ public class CredentialSecretServiceImpl {
                 .toList(), null);
     }
 
-    public void createSecret(CreateSecretRequest<CredentialSecretDto> secret) {
-        CredentialSecret credentialSecret = credentialSecretMapper.toEntity(secret.getSecret());
+    public void createSecret(CredentialSecretDto secret) {
+        CredentialSecret credentialSecret = credentialSecretMapper.toEntity(secret);
         credentialSecretRepository.save(credentialSecret);
     }
     
-    public CredentialSecretDto getSecretById(Long secretId) {
-        CredentialSecret secret = credentialSecretRepository.findById(secretId)
-                .orElseThrow();
-        return credentialSecretMapper.toDto(secret);
+    public CredentialSecretDto getSecretByIdAndUserId(Long secretId, Integer userId) {
+        CredentialSecret secret = SafeDbCall.safeDbCall(() -> credentialSecretRepository.findByIdAndUser_Id(secretId, userId), null);
+        return secret != null ? credentialSecretMapper.toDto(secret) : null;
     }
 
-    public CredentialSecretDto updateSecret(Long secretId, CredentialSecretDto secret) {
-        CredentialSecret credentialSecret = credentialSecretRepository.findById(secretId)
-                .orElseThrow();
+    public CredentialSecretDto updateSecretByIdAndUserId(Long secretId, Integer userId, CredentialSecretDto secret) {
+        CredentialSecret credentialSecret = SafeDbCall.safeDbCall(() -> credentialSecretRepository.findByIdAndUser_Id(secretId, userId), null);
+        if (credentialSecret == null) {
+            return null;
+        }
         credentialSecret.setUsername(secret.getUsername());
         credentialSecret.setPassword(secret.getPassword());
         credentialSecret.setUrl(secret.getUrl());
-        credentialSecretRepository.save(credentialSecret);
+        SafeDbCall.safeDbCall(() -> credentialSecretRepository.save(credentialSecret));
         return credentialSecretMapper.toDto(credentialSecret);
     }
 
-    public void deleteSecret(Long secretId) {
-        SafeDbCall.safeDbCall(() -> credentialSecretRepository.deleteById(secretId));
+    public void deleteSecretByIdAndUserId(Long secretId, Integer userId) {
+        SafeDbCall.safeDbCall(() -> {
+            CredentialSecret secret = credentialSecretRepository.findByIdAndUser_Id(secretId, userId);
+            if (secret != null) {
+                credentialSecretRepository.delete(secret);
+            }
+        });
     }
 }

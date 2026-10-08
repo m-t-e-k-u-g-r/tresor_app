@@ -16,12 +16,12 @@ public class EncryptUtil {
       //todo ergänzen!
    }
 
-   public String encrypt(String data) {
+   public static String encrypt(String data) {
       //todo anpassen!
       return data;
    }
 
-   public String decrypt(String data) {
+   public static String decrypt(String data) {
       //todo anpassen!
       return data;
    }

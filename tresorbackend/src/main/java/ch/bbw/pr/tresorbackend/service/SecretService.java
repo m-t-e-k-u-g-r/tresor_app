@@ -49,35 +49,35 @@ public class SecretService {
       return result;
    }
 
-   public void createSecret(SecretType type, CreateSecretRequest<? extends SecretDto> secretRequest) {
+   public void createSecret(SecretType type, SecretDto secretDto) {
        switch (type) {
-          case CREDENTIAL -> credentialService.createSecret((CreateSecretRequest<CredentialSecretDto>) secretRequest);
-          case CREDIT_CARD -> creditCardService.createSecret((CreateSecretRequest<CreditCardSecretDto>) secretRequest);
-          case NOTE -> noteService.createSecret((CreateSecretRequest<NoteSecretDto>) secretRequest);
+          case CREDENTIAL -> credentialService.createSecret((CredentialSecretDto) secretDto);
+          case CREDIT_CARD -> creditCardService.createSecret((CreditCardSecretDto) secretDto);
+          case NOTE -> noteService.createSecret((NoteSecretDto) secretDto);
        }
    }
 
-   public SecretDto getSecretById(SecretType type, Long secretId) {
+   public SecretDto getSecretByIdAndUserId(SecretType type, Long secretId, Integer userId) {
        return switch (type) {
-           case CREDENTIAL -> credentialService.getSecretById(secretId);
-           case CREDIT_CARD -> creditCardService.getSecretById(secretId);
-           case NOTE -> noteService.getSecretById(secretId);
+           case CREDENTIAL -> credentialService.getSecretByIdAndUserId(secretId, userId);
+           case CREDIT_CARD -> creditCardService.getSecretByIdAndUserId(secretId, userId);
+           case NOTE -> noteService.getSecretByIdAndUserId(secretId, userId);
        };
    }
 
-   public SecretDto updateSecret(SecretType type, Long secretId, SecretDto secretRequest) {
+   public SecretDto updateSecretByIdAndUserId(SecretType type, Long secretId, Integer userId, SecretDto secretRequest) {
       return switch (type) {
-         case CREDENTIAL -> credentialService.updateSecret(secretId, (CredentialSecretDto) secretRequest);
-         case CREDIT_CARD -> creditCardService.updateSecret(secretId, (CreditCardSecretDto) secretRequest);
-         case NOTE -> noteService.updateSecret(secretId, (NoteSecretDto) secretRequest);
+         case CREDENTIAL -> credentialService.updateSecretByIdAndUserId(secretId, userId, (CredentialSecretDto) secretRequest);
+         case CREDIT_CARD -> creditCardService.updateSecretByIdAndUserId(secretId, userId, (CreditCardSecretDto) secretRequest);
+         case NOTE -> noteService.updateSecretByIdAndUserId(secretId, userId, (NoteSecretDto) secretRequest);
       };
    }
 
-   public void deleteSecret(SecretType type, Long secretId) {
+   public void deleteSecretByIdAndUserId(SecretType type, Long secretId, Integer userId) {
        switch (type) {
-          case CREDENTIAL -> credentialService.deleteSecret(secretId);
-          case CREDIT_CARD -> creditCardService.deleteSecret(secretId);
-          case NOTE -> noteService.deleteSecret(secretId);
+          case CREDENTIAL -> credentialService.deleteSecretByIdAndUserId(secretId, userId);
+          case CREDIT_CARD -> creditCardService.deleteSecretByIdAndUserId(secretId, userId);
+          case NOTE -> noteService.deleteSecretByIdAndUserId(secretId, userId);
        }
    }
 }
