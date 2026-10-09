@@ -9,22 +9,27 @@ import java.util.function.Function;
 @Getter
 @Setter
 public abstract class SecretDto {
-    public SecretDto transform(Function<String, String> function) throws IllegalAccessException {
-        for (Field field : this.getClass().getDeclaredFields()) {
+
+    protected abstract SecretDto copy();
+
+    public SecretDto transform(Function<String, String> function) throws Exception {
+        SecretDto result = copy();
+
+        for (Field field : result.getClass().getDeclaredFields()) {
             if (field.getType() != String.class) {
                 continue;
             }
 
             field.setAccessible(true);
 
-            String value = (String) field.get(this);
+            String value = (String) field.get(result);
             if (value == null) {
                 continue;
             }
 
             String transformed = function.apply(value);
-            field.set(this, transformed);
+            field.set(result, transformed);
         }
-        return this;
+        return result;
     }
 }
