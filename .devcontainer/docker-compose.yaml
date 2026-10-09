@@ -5,13 +5,14 @@ services:
   database:
     image: postgres:18.0
     environment:
-      POSTGRES_USER: tresor_app_dev
+      POSTGRES_USER: postgres_admin
       POSTGRES_PASSWORD: 1234
-      POSTGRES_DB: tresor_app_dev
+      POSTGRES_DB: postgres
     ports:
       - "5432:5432"
     volumes:
       - data:/var/lib/postgresql/docker
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
 
 volumes:
   data:

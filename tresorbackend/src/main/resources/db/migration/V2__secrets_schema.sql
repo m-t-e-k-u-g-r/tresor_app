@@ -1,6 +1,6 @@
 CREATE TABLE credential_secret (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    user_id BIGINT NOT NULL,
+    user_id INT NOT NULL,
     username TEXT NOT NULL,
     password TEXT NOT NULL,
     url TEXT,
@@ -11,7 +11,7 @@ CREATE TABLE credential_secret (
 
 CREATE TABLE creditcard_secret (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    user_id BIGINT NOT NULL,
+    user_id INT NOT NULL,
     card_type TEXT NOT NULL,
     card_number TEXT NOT NULL,
     expiration TEXT NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE creditcard_secret (
 
 CREATE TABLE note_secret (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    user_id BIGINT NOT NULL,
+    user_id INT NOT NULL,
     title TEXT NOT NULL,
     content TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

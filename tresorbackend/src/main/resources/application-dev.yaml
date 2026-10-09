@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: tresorbackend
+  datasource:
+    url: jdbc:postgresql://database:5432/devdb
+    driver-class-name: org.postgresql.Driver
+    username: dev_user
+    password: dev_password
+  flyway:
+    enabled: true
+    locations:
+      - classpath:db/migration
+  jpa:
+    hibernate:
+      ddl-auto: none
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  sql:
+    init:
+      mode: never
+encryption:
+  master-key: super_secret_development_encryption_key
+CROSS_ORIGIN: http://172.27.0.3:3000
