@@ -6,7 +6,9 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.JdbcTypeCode;
 
+import java.sql.Types;
 import java.time.Instant;
 
 @Getter
@@ -33,6 +35,11 @@ public class User {
     @NotNull
     @Column(name = "email", nullable = false)
     private String email;
+
+    @NotNull
+    @JdbcTypeCode(Types.CHAR)
+    @Column(name = "salt", nullable = false, columnDefinition = "CHAR(44)")
+    private String salt;
 
     @NotNull
     @Column(name = "password", nullable = false, length = Integer.MAX_VALUE)
