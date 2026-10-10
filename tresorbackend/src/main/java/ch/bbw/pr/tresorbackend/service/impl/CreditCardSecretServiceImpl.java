@@ -2,6 +2,7 @@ package ch.bbw.pr.tresorbackend.service.impl;
 
 import ch.bbw.pr.tresorbackend.dto.CreditCardSecretDto;
 import ch.bbw.pr.tresorbackend.entities.CreditcardSecret;
+import ch.bbw.pr.tresorbackend.entities.User;
 import ch.bbw.pr.tresorbackend.mappers.CreditCardSecretMapper;
 import ch.bbw.pr.tresorbackend.repository.CreditCardSecretRepository;
 import ch.bbw.pr.tresorbackend.service.SafeDbCall;
@@ -30,8 +31,9 @@ public class CreditCardSecretServiceImpl {
                 .toList(), null);
     }
 
-    public void createSecret(CreditCardSecretDto secret) {
+    public void createSecret(CreditCardSecretDto secret, User user) {
         CreditcardSecret creditcardSecret = creditCardSecretMapper.toEntity(secret);
+        creditcardSecret.setUser(user);
         SafeDbCall.safeDbCall(() -> creditCardSecretRepository.save(creditcardSecret));
     }
 

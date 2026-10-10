@@ -1,6 +1,7 @@
 package ch.bbw.pr.tresorbackend.service;
 
 import ch.bbw.pr.tresorbackend.dto.*;
+import ch.bbw.pr.tresorbackend.entities.User;
 import ch.bbw.pr.tresorbackend.service.impl.CredentialSecretServiceImpl;
 import ch.bbw.pr.tresorbackend.service.impl.CreditCardSecretServiceImpl;
 import ch.bbw.pr.tresorbackend.service.impl.NoteSecretServiceImpl;
@@ -49,11 +50,11 @@ public class SecretService {
       return result;
    }
 
-   public void createSecret(SecretType type, SecretDto secretDto) {
+   public void createSecret(User user, SecretType type, SecretDto secretDto) {
        switch (type) {
-          case CREDENTIAL -> credentialService.createSecret((CredentialSecretDto) secretDto);
-          case CREDIT_CARD -> creditCardService.createSecret((CreditCardSecretDto) secretDto);
-          case NOTE -> noteService.createSecret((NoteSecretDto) secretDto);
+          case CREDENTIAL -> credentialService.createSecret((CredentialSecretDto) secretDto, user);
+          case CREDIT_CARD -> creditCardService.createSecret((CreditCardSecretDto) secretDto, user);
+          case NOTE -> noteService.createSecret((NoteSecretDto) secretDto, user);
        }
    }
 

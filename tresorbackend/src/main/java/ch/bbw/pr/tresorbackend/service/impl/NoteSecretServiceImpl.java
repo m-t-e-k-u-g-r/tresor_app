@@ -2,6 +2,7 @@ package ch.bbw.pr.tresorbackend.service.impl;
 
 import ch.bbw.pr.tresorbackend.dto.NoteSecretDto;
 import ch.bbw.pr.tresorbackend.entities.NoteSecret;
+import ch.bbw.pr.tresorbackend.entities.User;
 import ch.bbw.pr.tresorbackend.mappers.NoteSecretMapper;
 import ch.bbw.pr.tresorbackend.repository.NoteSecretRepository;
 import ch.bbw.pr.tresorbackend.service.SafeDbCall;
@@ -30,8 +31,9 @@ public class NoteSecretServiceImpl {
                 .toList(), null);
     }
 
-    public void createSecret(NoteSecretDto secret) {
+    public void createSecret(NoteSecretDto secret, User user) {
         NoteSecret noteSecret = noteSecretMapper.toEntity(secret);
+        noteSecret.setUser(user);
         noteSecretRepository.save(noteSecret);
     }
 

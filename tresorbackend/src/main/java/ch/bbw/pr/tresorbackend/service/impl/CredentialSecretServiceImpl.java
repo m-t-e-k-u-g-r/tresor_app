@@ -2,6 +2,7 @@ package ch.bbw.pr.tresorbackend.service.impl;
 
 import ch.bbw.pr.tresorbackend.dto.CredentialSecretDto;
 import ch.bbw.pr.tresorbackend.entities.CredentialSecret;
+import ch.bbw.pr.tresorbackend.entities.User;
 import ch.bbw.pr.tresorbackend.mappers.CredentialSecretMapper;
 import ch.bbw.pr.tresorbackend.repository.CredentialSecretRepository;
 import ch.bbw.pr.tresorbackend.service.SafeDbCall;
@@ -30,8 +31,9 @@ public class CredentialSecretServiceImpl {
                 .toList(), null);
     }
 
-    public void createSecret(CredentialSecretDto secret) {
+    public void createSecret(CredentialSecretDto secret, User user) {
         CredentialSecret credentialSecret = credentialSecretMapper.toEntity(secret);
+        credentialSecret.setUser(user);
         credentialSecretRepository.save(credentialSecret);
     }
     
