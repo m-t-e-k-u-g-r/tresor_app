@@ -45,4 +45,14 @@ public class CredentialSecret implements Secret {
     private Instant updatedAt;
 
 
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = Instant.now();
+    }
 }
