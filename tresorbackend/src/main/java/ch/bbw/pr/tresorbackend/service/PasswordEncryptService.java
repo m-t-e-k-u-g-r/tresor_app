@@ -1,5 +1,6 @@
 package ch.bbw.pr.tresorbackend.service;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
@@ -9,17 +10,18 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class PasswordEncryptService {
-   //todo add implementation here
+   private final BCryptPasswordEncoder bcryptEncoder;
 
-   public PasswordEncryptService() {
-      //todo add implementation here
+   public PasswordEncryptService(BCryptPasswordEncoder bcryptEncoder) {
+       this.bcryptEncoder = bcryptEncoder;
    }
 
    public String hashPassword(String password) {
-      //todo add implementation here
-      return password;
+      return bcryptEncoder.encode(password);
    }
 
-   //Todo add password match function: password vs hashedPassword
+   public boolean CheckPassword(String password, String hashed) {
+      return bcryptEncoder.matches(password, hashed);
+   }
 
 }
