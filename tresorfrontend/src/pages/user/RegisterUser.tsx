@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {postUser} from "../../comunication/FetchUser";
+import {LoginUserProps} from "../../types/login-props";
 
 /**
  * RegisterUser
  * @author Peter Rutschmann
  */
-function RegisterUser({loginValues, setLoginValues}) {
+function RegisterUser({ loginValues, setLoginValues }: LoginUserProps) {
     const navigate = useNavigate();
 
     const initialState = {
@@ -20,7 +21,7 @@ function RegisterUser({loginValues, setLoginValues}) {
     const [credentials, setCredentials] = useState(initialState);
     const [errorMessage, setErrorMessage] = useState('');
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: any) => {
         e.preventDefault();
         setErrorMessage('');
 
@@ -33,10 +34,15 @@ function RegisterUser({loginValues, setLoginValues}) {
 
         try {
             await postUser(credentials);
-            setLoginValues({userName: credentials.email, password: credentials.password});
+            setLoginValues(prev => ({
+                ...prev,
+                userName: credentials.email,
+                password: credentials.password
+            }));
             setCredentials(initialState);
             navigate('/');
-        } catch (error) {
+            // TODO: change error type
+        } catch (error: any) {
             console.error('Failed to fetch to server:', error.message);
             setErrorMessage(error.message);
         }

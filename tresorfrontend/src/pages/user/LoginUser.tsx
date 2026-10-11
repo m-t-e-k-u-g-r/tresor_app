@@ -1,16 +1,18 @@
 import { useNavigate } from 'react-router-dom';
-import {useState} from "react";
+import React, {useState} from "react";
 import {postUserLogin} from "../../comunication/FetchUser";
+import {LoginUserProps} from "../../types/login-props";
 
 /**
  * LoginUser
  * @author Peter Rutschmann
  */
-function LoginUser({loginValues, setLoginValues}) {
+
+function LoginUser({ loginValues, setLoginValues }: LoginUserProps) {
     const navigate = useNavigate();
     const [errorMessage, setErrorMessage] = useState('');
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: any) => {
         e.preventDefault();
         console.log(loginValues);
         setErrorMessage('');
@@ -18,7 +20,8 @@ function LoginUser({loginValues, setLoginValues}) {
         try {
             await postUserLogin(loginValues);
             navigate('/');
-        } catch (error) {
+            // TODO: change error type
+        } catch (error: any) {
             console.error('Failed to fetch to server:', error.message);
             setErrorMessage(error.message);
         }

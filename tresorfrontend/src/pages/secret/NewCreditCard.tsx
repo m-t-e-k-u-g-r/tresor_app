@@ -1,34 +1,40 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, {useState} from 'react';
+import {useNavigate} from 'react-router-dom';
 import {postSecret} from "../../comunication/FetchSecrets";
+import {LoginProps} from "../../types/login-props";
+import {SecretType} from "../../types/secret-type";
+import {CreditCardSecret} from "../../types/secret";
 
 /**
  * NewCreditCard
  * @author Peter Rutschmann
  */
-function NewCreditCard({loginValues}) {
-    const initialState = {
-        kindid: 2,
-        kind:"creditcard",
-        cardtype: "",
-        cardnumber: "",
+function NewCreditCard({ loginValues }: LoginProps) {
+    const initialState: CreditCardSecret = {
+        cardType: "",
+        cardNumber: "",
         expiration: "",
         cvv: ""
     };
-    const [creditCardValues, setCreditCardValues] = useState(initialState);
+    const [creditCardValues, setCreditCardValues] = useState<CreditCardSecret>(initialState);
     const [errorMessage, setErrorMessage] = useState('');
 
     const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
+    // TODO change error type
+    const handleSubmit = async (e: any) => {
         e.preventDefault();
         setErrorMessage('');
         try {
-            const content = creditCardValues;
-            await postSecret({loginValues, content});
+            await postSecret({
+                kind: SecretType.CREDIT_CARD,
+                email: loginValues.email,
+                encryptPassword: loginValues.password,
+                secret: creditCardValues
+            });
             setCreditCardValues(initialState);
             navigate('/secret/secrets');
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to fetch to server:', error.message);
             setErrorMessage(error.message);
         }
@@ -43,7 +49,7 @@ function NewCreditCard({loginValues}) {
                         <div>
                             <label>card type:</label>
                             <select
-                                value={creditCardValues.cardtype}
+                                value={creditCardValues.cardType}
                                 onChange={(e) =>
                                     setCreditCardValues((prevValues) => ({
                                         ...prevValues,
@@ -62,7 +68,7 @@ function NewCreditCard({loginValues}) {
                             <label>cardnumber:</label>
                             <input
                                 type="text"
-                                value={creditCardValues.cardnumber}
+                                value={creditCardValues.cardNumber}
                                 onChange={(e) =>
                                     setCreditCardValues(prevValues => ({...prevValues, cardnumber: e.target.value}))}
                                 required

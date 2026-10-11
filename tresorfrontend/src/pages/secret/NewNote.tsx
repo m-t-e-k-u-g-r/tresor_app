@@ -1,32 +1,39 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, {useState} from 'react';
+import {useNavigate} from 'react-router-dom';
 import {postSecret} from "../../comunication/FetchSecrets";
+import {LoginProps} from "../../types/login-props";
+import {NoteSecret, Secret} from "../../types/secret";
+import {SecretType} from "../../types/secret-type";
 
 /**
  * NewNote
  * @author Peter Rutschmann
  */
-function NewNote({loginValues}) {
-    const initialState = {
-        kindid: 3,
-        kind:"note",
+function NewNote({ loginValues }: LoginProps) {
+    const initialState: NoteSecret = {
         title: "",
         content: "",
     };
-    const [noteValues, setNoteValues] = useState(initialState);
+    const [noteValues, setNoteValues] = useState<NoteSecret>(initialState);
     const [errorMessage, setErrorMessage] = useState('');
 
     const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
+    // TODO: change error type
+    const handleSubmit = async (e: any) => {
         e.preventDefault();
         setErrorMessage('');
         try {
-            const content = noteValues;
-            await postSecret({loginValues, content});
+            await postSecret({
+                kind: SecretType.NOTE,
+                email: loginValues.email,
+                encryptPassword: loginValues.password,
+                secret: noteValues
+            });
             setNoteValues(initialState);
             navigate('/secret/secrets');
-        } catch (error) {
+            // TODO: change error type
+        } catch (error: any) {
             console.error('Failed to fetch to server:', error.message);
             setErrorMessage(error.message);
         }
@@ -59,7 +66,7 @@ function NewNote({loginValues}) {
                                     minWidth: '190px', // Minimale Breite
                                     minHeight: '100px', // Minimale Höhe
                                 }}
-                                value={noteValues.content}
+                                value={`${noteValues.title}\n${noteValues.content}`}
                                 onChange={(e) =>
                                     setNoteValues(prevValues =>
                                         ({...prevValues, content: e.target.value}))}

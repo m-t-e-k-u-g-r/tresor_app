@@ -12,13 +12,14 @@ import Secrets from "./pages/secret/Secrets";
 import NewCredential from "./pages/secret/NewCredential";
 import NewCreditCard from "./pages/secret/NewCreditCard";
 import NewNote from "./pages/secret/NewNote";
+import {Login} from "./types/user";
 
 /**
  * App
  * @author Peter Rutschmann
  */
 function App() {
-    const [loginValues, setLoginValues] = useState({
+    const [loginValues, setLoginValues] = useState<Login>({
         email: "",
         password: "",
     });
@@ -26,7 +27,7 @@ function App() {
         <BrowserRouter>
             <Routes>
                 <Route path="/" element={<Layout loginValues={loginValues}/>}>
-                    <Route index element={<Home/>}/>}/>
+                    <Route index element={<Home/>}/>
                     <Route path="/user/users" element={<Users loginValues={loginValues}/>}/>
                     <Route path="/user/login" element={<LoginUser loginValues={loginValues} setLoginValues={setLoginValues}/>}/>
                     <Route path="/user/register" element={<RegisterUser loginValues={loginValues} setLoginValues={setLoginValues}/>}/>

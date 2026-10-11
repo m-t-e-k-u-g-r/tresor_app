@@ -2,6 +2,8 @@
  * Fetch methodes for user api calls
  * @author Peter Rutschmann
  */
+import {Credentials} from "../types/credentials";
+import {Login} from "../types/user";
 
 
 export const getUsers = async () => {
@@ -28,13 +30,14 @@ export const getUsers = async () => {
         const data = await response.json();
         console.log('User successfully got:', data);
         return data;
-    } catch (error) {
+        // TODO: replace error type
+    } catch (error: any) {
         console.error('Failed to get user:', error.message);
         throw new Error('Failed to get user. ' || error.message);
     }
 }
 
-export const postUser = async (content) => {
+export const postUser = async (content: Credentials) => {
     const protocol = process.env.REACT_APP_API_PROTOCOL; // "http"
     const host = process.env.REACT_APP_API_HOST; // "localhost"
     const port = process.env.REACT_APP_API_PORT; // "8080"
@@ -64,13 +67,13 @@ export const postUser = async (content) => {
         const data = await response.json();
         console.log('User successfully posted:', data);
         return data;
-    } catch (error) {
+    } catch (error: any) {
         console.error('Failed to post user:', error.message);
         throw new Error('Failed to save user. ' || error.message);
     }
 };
 
-export const postUserLogin = async (content) => {
+export const postUserLogin = async (content: Login) => {
     const protocol = process.env.REACT_APP_API_PROTOCOL; // "http"
     const host = process.env.REACT_APP_API_HOST; // "localhost"
     const port = process.env.REACT_APP_API_PORT; // "8080"
@@ -97,7 +100,7 @@ export const postUserLogin = async (content) => {
         const data = await response.json();
         console.log('User successfully logged in:', data);
         return data;
-    } catch (error) {
+    } catch (error: any) {
         console.error('Failed to login user:', error.message);
         throw new Error('Failed to login user. ' + error.message);
     }
