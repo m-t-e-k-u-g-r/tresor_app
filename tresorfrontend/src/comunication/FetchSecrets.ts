@@ -1,6 +1,7 @@
 import {Login} from "../types/user";
 import {CreateSecretRequest} from "../types/create-secret";
 import {SecretType} from "../types/secret-type";
+import {getApiUrl} from "./api-url";
 
 /**
  * Fetch methodes for secret api calls
@@ -12,12 +13,7 @@ export interface FetchSecretsProps extends CreateSecretRequest {
 
 //Post secret to server
 export const postSecret = async ({ kind, email, encryptPassword, secret }: FetchSecretsProps) => {
-    const protocol = process.env.REACT_APP_API_PROTOCOL; // "http"
-    const host = process.env.REACT_APP_API_HOST; // "localhost"
-    const port = process.env.REACT_APP_API_PORT; // "8080"
-    const path = process.env.REACT_APP_API_PATH; // "/api"
-    const portPart = port ? `:${port}` : ''; // port is optional
-    const API_URL = `${protocol}://${host}${portPart}${path}`;
+    const API_URL = getApiUrl();
 
     try {
         const response = await fetch(`${API_URL}/secrets/${kind.toString()}`, {
@@ -49,12 +45,7 @@ export const postSecret = async ({ kind, email, encryptPassword, secret }: Fetch
 
 //get all secrets for a user identified by its email
 export const getSecretsforUser = async (loginValues: Login) => {
-    const protocol = process.env.REACT_APP_API_PROTOCOL; // "http"
-    const host = process.env.REACT_APP_API_HOST; // "localhost"
-    const port = process.env.REACT_APP_API_PORT; // "8080"
-    const path = process.env.REACT_APP_API_PATH; // "/api"
-    const portPart = port ? `:${port}` : ''; // port is optional
-    const API_URL = `${protocol}://${host}${portPart}${path}`;
+    const API_URL = getApiUrl();
 
     try {
         const response = await fetch(`${API_URL}/secrets/byemail`, {
