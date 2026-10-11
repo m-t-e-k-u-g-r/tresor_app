@@ -2,13 +2,13 @@ package ch.bbw.pr.tresorbackend.dto;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
-import lombok.Value;
+import lombok.Getter;
 
 /**
  * RegisterUser
  * @author Peter Rutschmann
  */
-@Value
+@Getter
 public class RegisterUser {
 
    @NotEmpty(message="Firstname is required.")
