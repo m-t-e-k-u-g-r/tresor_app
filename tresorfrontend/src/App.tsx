@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {BrowserRouter, Route, Routes} from "react-router-dom";
 import './App.css';
 import './css/mvp.css';
@@ -12,33 +12,31 @@ import Secrets from "./pages/secret/Secrets";
 import NewCredential from "./pages/secret/NewCredential";
 import NewCreditCard from "./pages/secret/NewCreditCard";
 import NewNote from "./pages/secret/NewNote";
-import {Login} from "./types/user";
+import {LoginProvider} from "./context/login-context";
 
 /**
  * App
  * @author Peter Rutschmann
  */
 function App() {
-    const [loginValues, setLoginValues] = useState<Login>({
-        email: "",
-        password: "",
-    });
     return (
-        <BrowserRouter>
-            <Routes>
-                <Route path="/" element={<Layout loginValues={loginValues}/>}>
-                    <Route index element={<Home/>}/>
-                    <Route path="/user/users" element={<Users loginValues={loginValues}/>}/>
-                    <Route path="/user/login" element={<LoginUser loginValues={loginValues} setLoginValues={setLoginValues}/>}/>
-                    <Route path="/user/register" element={<RegisterUser loginValues={loginValues} setLoginValues={setLoginValues}/>}/>
-                    <Route path="/secret/secrets" element={<Secrets loginValues={loginValues}/>}/>
-                    <Route path="/secret/newcredential" element={<NewCredential loginValues={loginValues}/>}/>
-                    <Route path="/secret/newcreditcard" element={<NewCreditCard loginValues={loginValues}/>}/>
-                    <Route path="/secret/newnote" element={<NewNote loginValues={loginValues}/>}/>
-                    <Route path="*" element={<NoPage/>}/>
-                </Route>
-            </Routes>
-        </BrowserRouter>
+        <LoginProvider>
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/" element={<Layout />}>
+                        <Route index element={<Home/>}/>
+                        <Route path="/user/users" element={<Users />}/>
+                        <Route path="/user/login" element={<LoginUser />}/>
+                        <Route path="/user/register" element={<RegisterUser />}/>
+                        <Route path="/secret/secrets" element={<Secrets />}/>
+                        <Route path="/secret/newcredential" element={<NewCredential />}/>
+                        <Route path="/secret/newcreditcard" element={<NewCreditCard />}/>
+                        <Route path="/secret/newnote" element={<NewNote />}/>
+                        <Route path="*" element={<NoPage/>}/>
+                    </Route>
+                </Routes>
+            </BrowserRouter>
+        </LoginProvider>
     )
 }
 

@@ -1,11 +1,12 @@
 import { Outlet, Link } from "react-router-dom";
-import {LoginProps} from "../types/login-props";
+import {useLogin} from "../context/login-context";
 
 /**
  * Layout
  * @author Peter Rutschmann
  */
-const Layout = ({ loginValues }: LoginProps) => {
+const Layout = () => {
+    const { loginValues } = useLogin();
     return (
         <>
             <nav>

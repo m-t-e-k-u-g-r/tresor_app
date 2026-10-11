@@ -2,13 +2,14 @@ import '../../App.css';
 import React, {useEffect, useState} from 'react';
 import {getSecretsforUser} from "../../comunication/FetchSecrets";
 import {Secret} from "../../types/secret";
-import {LoginProps} from "../../types/login-props";
+import {useLogin} from "../../context/login-context";
 
 /**
  * Secrets
  * @author Peter Rutschmann
  */
-const Secrets = ({ loginValues }: LoginProps) => {
+const Secrets = () => {
+    const { loginValues } = useLogin();
     const [secrets, setSecrets] = useState<Secret[]>([]);
     const [errorMessage, setErrorMessage] = useState('');
 

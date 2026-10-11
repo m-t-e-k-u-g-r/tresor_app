@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {postUser} from "../../comunication/FetchUser";
-import {LoginUserProps} from "../../types/login-props";
+import {useLogin} from "../../context/login-context";
 
 /**
  * RegisterUser
  * @author Peter Rutschmann
  */
-function RegisterUser({ loginValues, setLoginValues }: LoginUserProps) {
+function RegisterUser() {
+    const { updateLogin } = useLogin();
     const navigate = useNavigate();
 
     const initialState = {
@@ -34,11 +35,7 @@ function RegisterUser({ loginValues, setLoginValues }: LoginUserProps) {
 
         try {
             await postUser(credentials);
-            setLoginValues(prev => ({
-                ...prev,
-                userName: credentials.email,
-                password: credentials.password
-            }));
+            updateLogin({ email: credentials.email, password: credentials.password });
             setCredentials(initialState);
             navigate('/');
             // TODO: change error type

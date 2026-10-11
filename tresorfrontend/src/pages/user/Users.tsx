@@ -2,13 +2,14 @@ import '../../App.css';
 import React, {useEffect, useState} from "react";
 import {getUsers} from "../../comunication/FetchUser";
 import {User} from "../../types/user";
-import {LoginProps} from "../../types/login-props";
+import {useLogin} from "../../context/login-context";
 
 /**
  * Users
  * @author Peter Rutschmann
  */
-const Users = ({ loginValues }: LoginProps) => {
+const Users = () => {
+    const { loginValues } = useLogin();
     const [users, setUsers] = useState<User[]>([]);
     const [errorMessage, setErrorMessage] = useState('');
 

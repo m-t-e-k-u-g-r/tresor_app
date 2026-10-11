@@ -1,14 +1,15 @@
 import { useNavigate } from 'react-router-dom';
 import React, {useState} from "react";
 import {postUserLogin} from "../../comunication/FetchUser";
-import {LoginUserProps} from "../../types/login-props";
+import {useLogin} from "../../context/login-context";
 
 /**
  * LoginUser
  * @author Peter Rutschmann
  */
 
-function LoginUser({ loginValues, setLoginValues }: LoginUserProps) {
+function LoginUser() {
+    const { loginValues, updateLogin } = useLogin();
     const navigate = useNavigate();
     const [errorMessage, setErrorMessage] = useState('');
 
@@ -38,8 +39,7 @@ function LoginUser({ loginValues, setLoginValues }: LoginUserProps) {
                             <input
                                 type="text"
                                 value={loginValues.email}
-                                onChange={(e) =>
-                                    setLoginValues(prevValues => ({...prevValues, email: e.target.value}))}
+                                onChange={(e) => updateLogin({ ...loginValues, email: e.target.value })}
                                 required
                                 placeholder="Please enter your email *"
                             />
@@ -49,8 +49,7 @@ function LoginUser({ loginValues, setLoginValues }: LoginUserProps) {
                             <input
                                 type="text"
                                 value={loginValues.password}
-                                onChange={(e) =>
-                                    setLoginValues(prevValues => ({...prevValues, password: e.target.value}))}
+                                onChange={(e) => updateLogin({ ...loginValues, password: e.target.value })}
                                 required
                                 placeholder="Please enter your password *"
                             />
@@ -58,6 +57,7 @@ function LoginUser({ loginValues, setLoginValues }: LoginUserProps) {
                     </aside>
                 </section>
                 <button type="submit">Login</button>
+                <p>{errorMessage}</p>
             </form>
         </div>
     );

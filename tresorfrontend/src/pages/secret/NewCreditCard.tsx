@@ -1,15 +1,16 @@
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {postSecret} from "../../comunication/FetchSecrets";
-import {LoginProps} from "../../types/login-props";
 import {SecretType} from "../../types/secret-type";
 import {CreditCardSecret} from "../../types/secret";
+import {useLogin} from "../../context/login-context";
 
 /**
  * NewCreditCard
  * @author Peter Rutschmann
  */
-function NewCreditCard({ loginValues }: LoginProps) {
+function NewCreditCard() {
+    const { loginValues } = useLogin();
     const initialState: CreditCardSecret = {
         cardType: "",
         cardNumber: "",

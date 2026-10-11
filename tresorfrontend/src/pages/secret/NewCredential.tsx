@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {postSecret} from "../../comunication/FetchSecrets";
-import {LoginProps} from "../../types/login-props";
 import {SecretType} from "../../types/secret-type";
 import {CredentialSecret} from "../../types/secret";
+import {useLogin} from "../../context/login-context";
 
 /**
  * NewCredential
  * @author Peter Rutschmann
  */
-function NewCredential({ loginValues }: LoginProps) {
+function NewCredential() {
+    const { loginValues } = useLogin();
     const initialState: CredentialSecret = {
         username: "",
         password: "",

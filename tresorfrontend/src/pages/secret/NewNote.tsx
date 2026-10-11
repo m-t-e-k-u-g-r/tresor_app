@@ -1,15 +1,16 @@
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {postSecret} from "../../comunication/FetchSecrets";
-import {LoginProps} from "../../types/login-props";
-import {NoteSecret, Secret} from "../../types/secret";
+import {NoteSecret} from "../../types/secret";
 import {SecretType} from "../../types/secret-type";
+import {useLogin} from "../../context/login-context";
 
 /**
  * NewNote
  * @author Peter Rutschmann
  */
-function NewNote({ loginValues }: LoginProps) {
+function NewNote() {
+    const { loginValues } = useLogin();
     const initialState: NoteSecret = {
         title: "",
         content: "",
