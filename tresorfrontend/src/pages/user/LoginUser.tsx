@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import React, {useState} from "react";
-import {postUserLogin} from "../../comunication/FetchUser";
 import {useLogin} from "../../context/login-context";
 
 /**
@@ -8,8 +7,8 @@ import {useLogin} from "../../context/login-context";
  * @author Peter Rutschmann
  */
 
-function LoginUser() {
-    const { loginValues, updateLogin } = useLogin();
+export default function LoginUser() {
+    const { loginValues, updateLogin, login } = useLogin();
     const navigate = useNavigate();
     const [errorMessage, setErrorMessage] = useState('');
 
@@ -18,14 +17,8 @@ function LoginUser() {
         console.log(loginValues);
         setErrorMessage('');
 
-        try {
-            await postUserLogin(loginValues);
-            navigate('/');
-            // TODO: change error type
-        } catch (error: any) {
-            console.error('Failed to fetch to server:', error.message);
-            setErrorMessage(error.message);
-        }
+        login();
+        navigate('/');
     };
 
     return (
@@ -62,5 +55,3 @@ function LoginUser() {
         </div>
     );
 }
-
-export default LoginUser;

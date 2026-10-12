@@ -6,21 +6,23 @@ import {useLogin} from "../context/login-context";
  * @author Peter Rutschmann
  */
 const Layout = () => {
-    const { loginValues } = useLogin();
+    const { loginValues, userId } = useLogin();
     return (
         <>
             <nav>
                 <h1>The secret tresor application</h1>
-                <p>{loginValues.email === '' ? 'No user logged in' : 'user:' + loginValues.email}</p>
+                <p>{userId === null ? 'No user logged in' : `user ${userId}:` + loginValues.email}</p>
                 <ul>
-                    <li><span>Secrets</span>
-                    <ul>
-                        <li><Link to="/secret/secrets">my secrets</Link></li>
-                        <li><Link to="/secret/newcredential">new credential</Link></li>
-                        <li><Link to="/secret/newcreditcard">new credit-card</Link></li>
-                        <li><Link to="/secret/newnote">new note</Link></li>
-                    </ul>
-                    </li>
+                    {userId != null &&
+                        <li><span>Secrets</span>
+                            <ul>
+                                <li><Link to="/secret/secrets">my secrets</Link></li>
+                                <li><Link to="/secret/newcredential">new credential</Link></li>
+                                <li><Link to="/secret/newcreditcard">new credit-card</Link></li>
+                                <li><Link to="/secret/newnote">new note</Link></li>
+                            </ul>
+                        </li>
+                    }
                     <li><span>User</span>
                         <ul>
                             <li><Link to="/user/register">register</Link></li>

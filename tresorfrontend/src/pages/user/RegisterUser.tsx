@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {postUser} from "../../comunication/FetchUser";
 import {useLogin} from "../../context/login-context";
 
 /**
@@ -8,7 +7,7 @@ import {useLogin} from "../../context/login-context";
  * @author Peter Rutschmann
  */
 function RegisterUser() {
-    const { updateLogin } = useLogin();
+    const { updateLogin, signup } = useLogin();
     const navigate = useNavigate();
 
     const initialState = {
@@ -33,16 +32,10 @@ function RegisterUser() {
             return;
         }
 
-        try {
-            await postUser(credentials);
-            updateLogin({ email: credentials.email, password: credentials.password });
-            setCredentials(initialState);
-            navigate('/');
-            // TODO: change error type
-        } catch (error: any) {
-            console.error('Failed to fetch to server:', error.message);
-            setErrorMessage(error.message);
-        }
+        updateLogin({ email: credentials.email, password: credentials.password });
+        signup(credentials.firstName, credentials.lastName, credentials.passwordConfirmation);
+        setCredentials(initialState);
+        navigate('/');
     };
 
     return (
