@@ -1,8 +1,7 @@
 import '../../App.css';
 import React, {useEffect, useState} from 'react';
-import {getSecretsforUser} from "../../comunication/FetchSecrets";
-import {Secret} from "../../types/secret";
 import {useLogin} from "../../context/login-context";
+import {useSecret} from "../../context/secret-context";
 
 /**
  * Secrets
@@ -10,25 +9,17 @@ import {useLogin} from "../../context/login-context";
  */
 const Secrets = () => {
     const { loginValues } = useLogin();
-    const [secrets, setSecrets] = useState<Secret[]>([]);
+    const { secrets, loadSecrets } = useSecret();
     const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
-        const fetchSecrets = async () => {
+        const fetchSecrets = () => {
             setErrorMessage('');
             if( ! loginValues.email){
                 console.error('Secrets: No valid email, please do login first:' + loginValues);
                 setErrorMessage("No valid email, please do login first.");
             } else {
-                try {
-                    const data = await getSecretsforUser(loginValues);
-                    console.log(data);
-                    setSecrets(data);
-                    // TODO switch type of error
-                } catch (error: any) {
-                    console.error('Failed to fetch to server:', error.message);
-                    setErrorMessage(error.message);
-                }
+                loadSecrets()
             }
         };
         fetchSecrets();

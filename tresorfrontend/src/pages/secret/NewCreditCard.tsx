@@ -1,16 +1,15 @@
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {postSecret} from "../../comunication/FetchSecrets";
 import {SecretType} from "../../types/secret-type";
 import {CreditCardSecret} from "../../types/secret";
-import {useLogin} from "../../context/login-context";
+import {useSecret} from "../../context/secret-context";
 
 /**
  * NewCreditCard
  * @author Peter Rutschmann
  */
 function NewCreditCard() {
-    const { loginValues } = useLogin();
+    const { addSecret } = useSecret();
     const initialState: CreditCardSecret = {
         cardType: "",
         cardNumber: "",
@@ -27,12 +26,7 @@ function NewCreditCard() {
         e.preventDefault();
         setErrorMessage('');
         try {
-            await postSecret({
-                kind: SecretType.CREDIT_CARD,
-                email: loginValues.email,
-                encryptPassword: loginValues.password,
-                secret: creditCardValues
-            });
+            addSecret(SecretType.CREDIT_CARD, creditCardValues);
             setCreditCardValues(initialState);
             navigate('/secret/secrets');
         } catch (error: any) {

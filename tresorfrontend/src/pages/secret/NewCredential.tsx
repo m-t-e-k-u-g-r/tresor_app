@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {postSecret} from "../../comunication/FetchSecrets";
 import {SecretType} from "../../types/secret-type";
 import {CredentialSecret} from "../../types/secret";
 import {useLogin} from "../../context/login-context";
+import {useSecret} from "../../context/secret-context";
 
 /**
  * NewCredential
@@ -11,6 +11,7 @@ import {useLogin} from "../../context/login-context";
  */
 function NewCredential() {
     const { loginValues } = useLogin();
+    const { addSecret } = useSecret();
     const initialState: CredentialSecret = {
         username: "",
         password: "",
@@ -27,12 +28,7 @@ function NewCredential() {
         setErrorMessage('');
         console.log(loginValues)
         try {
-            await postSecret({
-                kind: SecretType.CREDENTIAL,
-                email: loginValues.email,
-                encryptPassword: loginValues.password,
-                secret: credentialValues
-            });
+            addSecret(SecretType.CREDENTIAL, credentialValues);
             setCredentialValues(initialState);
             navigate('/secret/secrets');
         } catch (error: any) {

@@ -1,16 +1,15 @@
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {postSecret} from "../../comunication/FetchSecrets";
 import {NoteSecret} from "../../types/secret";
 import {SecretType} from "../../types/secret-type";
-import {useLogin} from "../../context/login-context";
+import {useSecret} from "../../context/secret-context";
 
 /**
  * NewNote
  * @author Peter Rutschmann
  */
 function NewNote() {
-    const { loginValues } = useLogin();
+    const { addSecret } = useSecret();
     const initialState: NoteSecret = {
         title: "",
         content: "",
@@ -25,12 +24,7 @@ function NewNote() {
         e.preventDefault();
         setErrorMessage('');
         try {
-            await postSecret({
-                kind: SecretType.NOTE,
-                email: loginValues.email,
-                encryptPassword: loginValues.password,
-                secret: noteValues
-            });
+            addSecret(SecretType.NOTE, noteValues);
             setNoteValues(initialState);
             navigate('/secret/secrets');
             // TODO: change error type
