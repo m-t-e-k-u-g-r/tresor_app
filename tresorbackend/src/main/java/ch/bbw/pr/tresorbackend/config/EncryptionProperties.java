@@ -9,4 +9,5 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Setter
 public class EncryptionProperties {
     private String masterKey;
+    private String pepper;
 }
