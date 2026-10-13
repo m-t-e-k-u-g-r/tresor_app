@@ -43,13 +43,16 @@ public class SecretController {
    @CrossOrigin(origins = "${CROSS_ORIGIN}")
    @PostMapping("/{type}")
    public ResponseEntity<String> createSecret2(
-           @PathVariable SecretType type,
+           @PathVariable("type") String typeString,
            @Valid @RequestBody CreateSecretRequest<? extends SecretDto> createSecretRequest,
            BindingResult bindingResult
    ) {
       //input validation
       if (bindingResult.hasErrors()) return errorHandler.handleErrors(bindingResult, "SecretController.createSecret2");
       log.info("SecretController.createSecret, input validation passed");
+
+      SecretType type = SecretType.parseSecretType(typeString);
+      if (type == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: Invalid secret type");
 
       User user = userService.findByEmail(createSecretRequest.getEmail());
       if (user == null) return ResponseEntity.notFound().build();
@@ -96,7 +99,7 @@ public class SecretController {
            @RequestBody EncryptCredentials credentials
    ) {
       if (credentials.getEmail() == null) return ResponseEntity.badRequest().build();
-      log.info("SecretController.getSecretsByEmail {}", credentials);
+      log.info("SecretController.getSecretsByEmail {}", credentials.getPassword());
 
       User user = userService.findByEmail(credentials.getEmail());
       if (user == null) return ResponseEntity.notFound().build();
@@ -132,13 +135,16 @@ public class SecretController {
    @CrossOrigin(origins = "${CROSS_ORIGIN}")
    @PutMapping("/{type}/{id}")
    public ResponseEntity<String> updateSecret(
-           @PathVariable SecretType type,
+           @PathVariable("type") String typeString,
            @PathVariable("id") Long secretId,
            @Valid @RequestBody CreateSecretRequest<? extends SecretDto> createSecretRequest,
            BindingResult bindingResult
    ) {
       //input validation
       if (bindingResult.hasErrors()) return errorHandler.handleErrors(bindingResult, "SecretController.updateSecret");
+
+      SecretType type = SecretType.parseSecretType(typeString);
+      if (type == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: Invalid secret type");
 
       User user = userService.findByEmail(createSecretRequest.getEmail());
       if (user == null) return ResponseEntity.notFound().build();
@@ -169,11 +175,13 @@ public class SecretController {
    @CrossOrigin(origins = "${CROSS_ORIGIN}")
    @DeleteMapping("/{type}/{id}")
    public ResponseEntity<String> deleteSecret(
-           @PathVariable("type") SecretType type,
+           @PathVariable("type") String typeString,
            @PathVariable("id") Long secretId,
            @RequestBody EncryptCredentials credentials
    ) {
-      //todo: Some kind of brute force delete, perhaps test first userid and encryptpassword
+      SecretType type = SecretType.parseSecretType(typeString);
+      if (type == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: Invalid secret type");
+
       User user = userService.findByEmail(credentials.getEmail());
       if (user == null || !Objects.equals(credentials.getUserId(), user.getId())) {
          return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
