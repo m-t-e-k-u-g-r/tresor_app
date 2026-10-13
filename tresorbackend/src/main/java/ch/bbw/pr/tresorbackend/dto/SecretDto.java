@@ -1,5 +1,8 @@
 package ch.bbw.pr.tresorbackend.dto;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.sun.jdi.InvalidTypeException;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,7 +11,19 @@ import java.util.function.Function;
 
 @Getter
 @Setter
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "type"
+)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = CredentialSecretDto.class, name = "CREDENTIAL"),
+        @JsonSubTypes.Type(value = CreditCardSecretDto.class, name = "CREDIT_CARD"),
+        @JsonSubTypes.Type(value = NoteSecretDto.class, name = "NOTE")
+})
 public abstract class SecretDto {
+
+    public abstract SecretType getType();
 
     protected abstract SecretDto copy();
 

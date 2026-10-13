@@ -1,14 +1,11 @@
 package ch.bbw.pr.tresorbackend.controller;
 
-import ch.bbw.pr.tresorbackend.dto.CreateSecretRequest;
-import ch.bbw.pr.tresorbackend.dto.EncryptCredentials;
-import ch.bbw.pr.tresorbackend.dto.SecretDto;
-import ch.bbw.pr.tresorbackend.dto.SecretType;
+import ch.bbw.pr.tresorbackend.dto.*;
 import ch.bbw.pr.tresorbackend.entities.User;
-import ch.bbw.pr.tresorbackend.service.PasswordEncryptService;
 import ch.bbw.pr.tresorbackend.service.SecretEncryptionService;
 import ch.bbw.pr.tresorbackend.service.SecretService;
 import ch.bbw.pr.tresorbackend.service.UserService;
+import ch.bbw.pr.tresorbackend.util.ControllerUtil;
 import ch.bbw.pr.tresorbackend.util.ErrorHandler;
 import com.google.gson.Gson;
 import jakarta.validation.Valid;
@@ -33,26 +30,21 @@ import java.util.Objects;
 @RequestMapping("api/secrets")
 public class SecretController {
 
-   private final PasswordEncryptService passwordEncryptService;
    private SecretService secretService;
    private SecretEncryptionService encryptionService;
    private ErrorHandler errorHandler;
    private UserService userService;
+   private ControllerUtil util;
 
    // create secret REST API
-   @CrossOrigin(origins = "${CROSS_ORIGIN}")
-   @PostMapping("/{type}")
+   @PostMapping
    public ResponseEntity<String> createSecret2(
-           @PathVariable("type") String typeString,
            @Valid @RequestBody CreateSecretRequest<? extends SecretDto> createSecretRequest,
            BindingResult bindingResult
    ) {
       //input validation
       if (bindingResult.hasErrors()) return errorHandler.handleErrors(bindingResult, "SecretController.createSecret2");
       log.info("SecretController.createSecret, input validation passed");
-
-      SecretType type = SecretType.parseSecretType(typeString);
-      if (type == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: Invalid secret type");
 
       User user = userService.findByEmail(createSecretRequest.getEmail());
       if (user == null) return ResponseEntity.notFound().build();
@@ -61,7 +53,7 @@ public class SecretController {
               createSecretRequest.getSecret(),
               user.getSalt()
       );
-      secretService.createSecret(user, type, encrypted);
+      secretService.createSecret(user, encrypted);
 
       log.info("SecretController.createSecret, secret saved in db");
       String json = new Gson().toJson(Map.of("answer", "Secret saved"));
@@ -70,7 +62,6 @@ public class SecretController {
    }
 
    // Build Get Secrets by userId REST API
-   @CrossOrigin(origins = "${CROSS_ORIGIN}")
    @PostMapping("/byuserid")
    public ResponseEntity<List<SecretDto>> getSecretsByUserId(@RequestBody EncryptCredentials credentials) {
       if (credentials.getUserId() == null) return ResponseEntity.badRequest().build();
@@ -78,8 +69,7 @@ public class SecretController {
 
       User user = userService.getUserById(credentials.getUserId());
       if (user == null) return ResponseEntity.notFound().build();
-      boolean valid = passwordEncryptService.CheckPassword(credentials.getPassword(), user.getPassword());
-      if (!valid) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      util.validatePassword(credentials.getPassword(), user.getPassword(), "SecretController.getSecretsByUserId");
 
       List<SecretDto> secrets = secretService.getSecretsByUserId(user.getId());
       if (secrets.isEmpty()) {
@@ -93,7 +83,6 @@ public class SecretController {
    }
 
    // Build Get Secrets by email REST API
-   @CrossOrigin(origins = "${CROSS_ORIGIN}")
    @PostMapping("/byemail")
    public ResponseEntity<List<SecretDto>> getSecretsByEmail(
            @RequestBody EncryptCredentials credentials
@@ -103,8 +92,7 @@ public class SecretController {
 
       User user = userService.findByEmail(credentials.getEmail());
       if (user == null) return ResponseEntity.notFound().build();
-      boolean valid = passwordEncryptService.CheckPassword(credentials.getPassword(), user.getPassword());
-      if (!valid) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      util.validatePassword(credentials.getPassword(), user.getPassword(), "SecretController.getSecretsByEmail");
 
       List<SecretDto> secrets = secretService.getSecretsByUserId(user.getId());
       if (secrets.isEmpty()) {
@@ -117,13 +105,13 @@ public class SecretController {
                  .toList();
          return ResponseEntity.ok(decrypted);
       } catch (Exception e) {
+         log.error("SecretController.getSecretsByEmail: {}", e.getMessage());
          return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
       }
    }
 
    // Build Get All Secrets REST API
    // http://localhost:8080/api/secrets
-   @CrossOrigin(origins = "${CROSS_ORIGIN}")
    @GetMapping
    public ResponseEntity<List<SecretDto>> getAllSecrets() {
       List<SecretDto> secrets = secretService.getAllSecrets();
@@ -132,7 +120,6 @@ public class SecretController {
 
    // Build Update Secrete REST API
    // http://localhost:8080/api/secrets/1
-   @CrossOrigin(origins = "${CROSS_ORIGIN}")
    @PutMapping("/{type}/{id}")
    public ResponseEntity<String> updateSecret(
            @PathVariable("type") String typeString,
@@ -148,8 +135,7 @@ public class SecretController {
 
       User user = userService.findByEmail(createSecretRequest.getEmail());
       if (user == null) return ResponseEntity.notFound().build();
-      boolean valid = passwordEncryptService.CheckPassword(createSecretRequest.getPassword(), user.getPassword());
-      if (!valid) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      util.validatePassword(createSecretRequest.getPassword(), user.getPassword(), "SecretsController.updateSecret");
 
       SecretDto dbSecret = secretService.getSecretByIdAndUserId(type, secretId, user.getId());
       if(dbSecret == null){
@@ -172,7 +158,6 @@ public class SecretController {
    }
 
    // Build Delete Secret REST API
-   @CrossOrigin(origins = "${CROSS_ORIGIN}")
    @DeleteMapping("/{type}/{id}")
    public ResponseEntity<String> deleteSecret(
            @PathVariable("type") String typeString,

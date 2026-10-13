@@ -19,6 +19,11 @@ public class CredentialSecretDto extends SecretDto {
     private String url;
 
     @Override
+    public SecretType getType() {
+        return SecretType.CREDENTIAL;
+    }
+
+    @Override
     protected CredentialSecretDto copy() {
         return new CredentialSecretDto(
                 this.getUsername(),
