@@ -15,4 +15,4 @@ spring:
       mode: never
 encryption:
   master-key: ${ENCRYPTION_KEY}
-CROSS_ORIGIN: http://172.27.0.3:3000
+  pepper: ${PEPPER}

@@ -19,4 +19,4 @@ spring:
       mode: never
 encryption:
   master-key: super_secret_development_encryption_key
-CROSS_ORIGIN: http://172.27.0.3:3000
+  pepper: development_pepper
