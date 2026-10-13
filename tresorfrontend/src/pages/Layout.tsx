@@ -7,6 +7,24 @@ import {useLogin} from "../context/login-context";
  */
 const Layout = () => {
     const { loginValues, userId } = useLogin();
+
+    function userNav() {
+        if (userId != null) {
+            return (
+                <ul>
+                    <li><a href="/">logout</a></li>
+                </ul>
+            )
+        } else {
+            return (
+                <ul>
+                    <li><Link to="/user/register">register</Link>
+                    </li><li><Link to="/user/login">login</Link></li>
+                </ul>
+            )
+        }
+    }
+
     return (
         <>
             <nav>
@@ -24,11 +42,7 @@ const Layout = () => {
                         </li>
                     }
                     <li><span>User</span>
-                        <ul>
-                            <li><Link to="/user/register">register</Link></li>
-                            <li><Link to="/user/login">login</Link></li>
-                            <li><a href="/">logout</a></li> {/* as no link it will reload an cleanup useStates*/}
-                        </ul>
+                        { userNav() }
                     </li>
                     <li><span>Admin</span>
                         <ul>

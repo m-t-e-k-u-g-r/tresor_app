@@ -21,9 +21,9 @@ import {SecretProvider} from "./context/secret-context";
  */
 export default function App() {
     return (
-        <LoginProvider>
-            <SecretProvider>
-                <BrowserRouter>
+        <BrowserRouter>
+            <LoginProvider>
+                <SecretProvider>
                     <Routes>
                         <Route path="/" element={<Layout />}>
                             <Route index element={<Home/>}/>
@@ -37,8 +37,8 @@ export default function App() {
                             <Route path="*" element={<NoPage/>}/>
                         </Route>
                     </Routes>
-                </BrowserRouter>
-            </SecretProvider>
-        </LoginProvider>
+                </SecretProvider>
+            </LoginProvider>
+        </BrowserRouter>
     )
 }

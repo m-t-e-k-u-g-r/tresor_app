@@ -33,7 +33,7 @@ function RegisterUser() {
         }
 
         updateLogin({ email: credentials.email, password: credentials.password });
-        signup(credentials.firstName, credentials.lastName, credentials.passwordConfirmation);
+        await signup(credentials.firstName, credentials.lastName, credentials.passwordConfirmation);
         setCredentials(initialState);
         navigate('/');
     };

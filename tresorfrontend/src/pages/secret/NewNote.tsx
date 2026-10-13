@@ -1,8 +1,9 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {NoteSecret} from "../../types/secret";
 import {SecretType} from "../../types/secret-type";
 import {useSecret} from "../../context/secret-context";
+import {useLogin} from "../../context/login-context";
 
 /**
  * NewNote
@@ -10,6 +11,7 @@ import {useSecret} from "../../context/secret-context";
  */
 function NewNote() {
     const { addSecret } = useSecret();
+    const { checkLogin } = useLogin();
     const initialState: NoteSecret = {
         title: "",
         content: "",
@@ -24,7 +26,7 @@ function NewNote() {
         e.preventDefault();
         setErrorMessage('');
         try {
-            addSecret(SecretType.NOTE, noteValues);
+            await addSecret(SecretType.NOTE, noteValues);
             setNoteValues(initialState);
             navigate('/secret/secrets');
             // TODO: change error type
@@ -33,6 +35,8 @@ function NewNote() {
             setErrorMessage(error.message);
         }
     };
+
+    useEffect(() => checkLogin(), [])
 
     return (
         <div>
@@ -61,7 +65,7 @@ function NewNote() {
                                     minWidth: '190px', // Minimale Breite
                                     minHeight: '100px', // Minimale Höhe
                                 }}
-                                value={`${noteValues.title}\n${noteValues.content}`}
+                                value={noteValues.content}
                                 onChange={(e) =>
                                     setNoteValues(prevValues =>
                                         ({...prevValues, content: e.target.value}))}

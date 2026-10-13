@@ -17,7 +17,7 @@ export default function LoginUser() {
         console.log(loginValues);
         setErrorMessage('');
 
-        login();
+        await login();
         navigate('/');
     };
 

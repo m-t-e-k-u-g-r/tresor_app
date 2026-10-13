@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 import {SecretType} from "../../types/secret-type";
 import {CredentialSecret} from "../../types/secret";
@@ -10,7 +10,7 @@ import {useSecret} from "../../context/secret-context";
  * @author Peter Rutschmann
  */
 function NewCredential() {
-    const { loginValues } = useLogin();
+    const { checkLogin, loginValues } = useLogin();
     const { addSecret } = useSecret();
     const initialState: CredentialSecret = {
         username: "",
@@ -28,7 +28,7 @@ function NewCredential() {
         setErrorMessage('');
         console.log(loginValues)
         try {
-            addSecret(SecretType.CREDENTIAL, credentialValues);
+            await addSecret(SecretType.CREDENTIAL, credentialValues);
             setCredentialValues(initialState);
             navigate('/secret/secrets');
         } catch (error: any) {
@@ -36,6 +36,8 @@ function NewCredential() {
             setErrorMessage(error.message);
         }
     };
+
+    useEffect(() => checkLogin(), [])
 
     return (
         <div>
@@ -49,7 +51,7 @@ function NewCredential() {
                                 type="text"
                                 value={credentialValues.username}
                                 onChange={(e) =>
-                                    setCredentialValues(prevValues => ({...prevValues, userName: e.target.value}))}
+                                    setCredentialValues(prevValues => ({...prevValues, username: e.target.value}))}
                                 required
                                 placeholder="Please enter username"
                             />
@@ -59,9 +61,10 @@ function NewCredential() {
                             <input
                                 type="text"
                                 value={credentialValues.password}
-                                onChange={(e) =>
+                                onChange={(e) => {
+                                    console.log(`pwd value: ${e.target.value}`)
                                     setCredentialValues(prevValues => ({...prevValues, password: e.target.value}))
-                                }
+                                }}
                                 required
                                 placeholder="Please enter password"
                             />
