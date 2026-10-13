@@ -21,6 +21,11 @@ public class CreditCardSecretDto extends SecretDto {
     private String cvv;
 
     @Override
+    public SecretType getType() {
+        return SecretType.CREDIT_CARD;
+    }
+
+    @Override
     protected CreditCardSecretDto copy() {
         return new CreditCardSecretDto(
                 this.getCardType(),

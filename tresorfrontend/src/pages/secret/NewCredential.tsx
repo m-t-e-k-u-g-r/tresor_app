@@ -1,38 +1,43 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { useNavigate } from 'react-router-dom';
-import {postSecret} from "../../comunication/FetchSecrets";
+import {SecretType} from "../../types/secret-type";
+import {CredentialSecret} from "../../types/secret";
+import {useLogin} from "../../context/login-context";
+import {useSecret} from "../../context/secret-context";
 
 /**
  * NewCredential
  * @author Peter Rutschmann
  */
-function NewCredential({loginValues}) {
-    const initialState = {
-        kindid: 1,
-        kind:"credential",
-        userName: "",
+function NewCredential() {
+    const { checkLogin, loginValues } = useLogin();
+    const { addSecret } = useSecret();
+    const initialState: CredentialSecret = {
+        username: "",
         password: "",
         url: ""
     };
-    const [credentialValues, setCredentialValues] = useState(initialState);
+    const [credentialValues, setCredentialValues] = useState<CredentialSecret>(initialState);
     const [errorMessage, setErrorMessage] = useState('');
 
     const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
+    // TODO: change error type
+    const handleSubmit = async (e: any) => {
         e.preventDefault();
         setErrorMessage('');
         console.log(loginValues)
         try {
-            const content = credentialValues;
-            await postSecret({loginValues, content});
+            await addSecret(SecretType.CREDENTIAL, credentialValues);
             setCredentialValues(initialState);
             navigate('/secret/secrets');
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to fetch to server:', error.message);
             setErrorMessage(error.message);
         }
     };
+
+    useEffect(() => checkLogin(), [])
 
     return (
         <div>
@@ -44,9 +49,9 @@ function NewCredential({loginValues}) {
                             <label>username:</label>
                             <input
                                 type="text"
-                                value={credentialValues.userName}
+                                value={credentialValues.username}
                                 onChange={(e) =>
-                                    setCredentialValues(prevValues => ({...prevValues, userName: e.target.value}))}
+                                    setCredentialValues(prevValues => ({...prevValues, username: e.target.value}))}
                                 required
                                 placeholder="Please enter username"
                             />
@@ -56,8 +61,10 @@ function NewCredential({loginValues}) {
                             <input
                                 type="text"
                                 value={credentialValues.password}
-                                onChange={(e) =>
-                                    setCredentialValues(prevValues => ({...prevValues, password: e.target.value}))}
+                                onChange={(e) => {
+                                    console.log(`pwd value: ${e.target.value}`)
+                                    setCredentialValues(prevValues => ({...prevValues, password: e.target.value}))
+                                }}
                                 required
                                 placeholder="Please enter password"
                             />

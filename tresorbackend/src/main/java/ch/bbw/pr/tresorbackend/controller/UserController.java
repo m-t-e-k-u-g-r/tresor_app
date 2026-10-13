@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.security.SecureRandom;
 import java.util.Base64;
@@ -39,7 +40,6 @@ public class UserController {
    private PasswordEncryptService passwordService;
 
    // build create User REST API
-   @CrossOrigin(origins = "${CROSS_ORIGIN}")
    @PostMapping
    public ResponseEntity<String> createUser(@Valid @RequestBody RegisterUser registerUser, BindingResult bindingResult) {
       //captcha
@@ -59,7 +59,12 @@ public class UserController {
       secureRandom.nextBytes(salt);
 
       user.setSalt(Base64.getEncoder().encodeToString(salt));
-      user.setPassword(passwordService.hashPassword(registerUser.getPassword()));
+      try {
+         user.setPassword(passwordService.hashPassword(registerUser.getPassword()));
+      } catch (Exception e) {
+         log.error("UserController.createUser failed to hash password");
+         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+      }
       User savedUser = userService.createUser(user);
       JsonObject obj = new JsonObject();
       if (savedUser != null) {
@@ -76,7 +81,6 @@ public class UserController {
 
    // build get user by id REST API
    // http://localhost:8080/api/users/1
-   @CrossOrigin(origins = "${CROSS_ORIGIN}")
    @GetMapping("{id}")
    public ResponseEntity<UserDto> getUserById(@PathVariable("id") Integer userId) {
       User user = userService.getUserById(userId);
@@ -86,7 +90,6 @@ public class UserController {
 
    // Build Get All Users REST API
    // http://localhost:8080/api/users
-   @CrossOrigin(origins = "${CROSS_ORIGIN}")
    @GetMapping
    public ResponseEntity<List<UserDto>> getAllUsers() {
       List<UserDto> users = userService.getAllUsers()
@@ -98,7 +101,6 @@ public class UserController {
 
    // Build Update User REST API
    // http://localhost:8080/api/users/1
-   @CrossOrigin(origins = "${CROSS_ORIGIN}")
    @PutMapping("{id}")
    public ResponseEntity<UserDto> updateUser(
            @PathVariable("id") Integer userId,
@@ -111,7 +113,6 @@ public class UserController {
    }
 
    // Build Delete User REST API
-   @CrossOrigin(origins = "${CROSS_ORIGIN}")
    @DeleteMapping("{id}")
    public ResponseEntity<String> deleteUser(@PathVariable("id") Integer userId) {
       if( userService.deleteUser(userId))
@@ -120,7 +121,6 @@ public class UserController {
    }
 
    // get user id by email
-   @CrossOrigin(origins = "${CROSS_ORIGIN}")
    @PostMapping("/byemail")
    public ResponseEntity<String> getUserIdByEmail(@RequestBody EmailAddress email, BindingResult bindingResult) {
       log.info("UserController.getUserIdByEmail: {}", email);
@@ -146,7 +146,6 @@ public class UserController {
    }
 
    // simple login with no websecurity, just name and password
-   @CrossOrigin(origins = "${CROSS_ORIGIN}")
    @PostMapping("/login")
    public ResponseEntity<LoginResponse> doLoginUser(@RequestBody LoginUser loginUser, BindingResult bindingResult) {
       log.info("UserController.doLoginUser: {}", loginUser);
@@ -164,8 +163,13 @@ public class UserController {
          return ResponseEntity.badRequest().body(new LoginResponse("No user found with this email", null));
       }
 
-      if (!passwordService.CheckPassword(loginUser.getPassword(), user.getPassword()))
-         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      try {
+         if (!passwordService.CheckPassword(loginUser.getPassword(), user.getPassword()))
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      } catch (Exception e) {
+         log.error("UserController.doLoginUser failed to check password");
+         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+      }
 
       log.info("UserController.doLoginUser: login successful");
       return ResponseEntity.ok(new LoginResponse("Login successful", user.getId()));

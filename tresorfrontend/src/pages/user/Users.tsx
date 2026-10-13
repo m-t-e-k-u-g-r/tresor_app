@@ -1,13 +1,16 @@
 import '../../App.css';
 import React, {useEffect, useState} from "react";
 import {getUsers} from "../../comunication/FetchUser";
+import {User} from "../../types/user";
+import {useLogin} from "../../context/login-context";
 
 /**
  * Users
  * @author Peter Rutschmann
  */
-const Users = ({loginValues}) => {
-    const [users, setUsers] = useState([]);
+const Users = () => {
+    const { loginValues } = useLogin();
+    const [users, setUsers] = useState<User[]>([]);
     const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
@@ -16,7 +19,8 @@ const Users = ({loginValues}) => {
                 const users = await getUsers();
                 console.log(users);
                 setUsers(users);
-            } catch (error) {
+                // TODO: change error type
+            } catch (error: any) {
                 console.error('Failed to fetch to server:', error.message);
                 setErrorMessage(error.message);
             }
@@ -29,7 +33,7 @@ const Users = ({loginValues}) => {
             <h1>Client list</h1>
             <ul>
                 {users.map(user => (
-                    <li key={user.id}>{user.id} {user.firstName} {user.lastName} - {user.email} - {user.password}</li>
+                    <li key={user.email}>{user.firstName} {user.lastName} - {user.email}</li>
                 ))}
             </ul>
             {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}

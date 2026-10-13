@@ -1,27 +1,24 @@
 import { useNavigate } from 'react-router-dom';
-import {useState} from "react";
-import {postUserLogin} from "../../comunication/FetchUser";
+import React, {useState} from "react";
+import {useLogin} from "../../context/login-context";
 
 /**
  * LoginUser
  * @author Peter Rutschmann
  */
-function LoginUser({loginValues, setLoginValues}) {
+
+export default function LoginUser() {
+    const { loginValues, updateLogin, login } = useLogin();
     const navigate = useNavigate();
     const [errorMessage, setErrorMessage] = useState('');
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: any) => {
         e.preventDefault();
         console.log(loginValues);
         setErrorMessage('');
 
-        try {
-            await postUserLogin(loginValues);
-            navigate('/');
-        } catch (error) {
-            console.error('Failed to fetch to server:', error.message);
-            setErrorMessage(error.message);
-        }
+        await login();
+        navigate('/');
     };
 
     return (
@@ -35,8 +32,7 @@ function LoginUser({loginValues, setLoginValues}) {
                             <input
                                 type="text"
                                 value={loginValues.email}
-                                onChange={(e) =>
-                                    setLoginValues(prevValues => ({...prevValues, email: e.target.value}))}
+                                onChange={(e) => updateLogin({ ...loginValues, email: e.target.value })}
                                 required
                                 placeholder="Please enter your email *"
                             />
@@ -46,8 +42,7 @@ function LoginUser({loginValues, setLoginValues}) {
                             <input
                                 type="text"
                                 value={loginValues.password}
-                                onChange={(e) =>
-                                    setLoginValues(prevValues => ({...prevValues, password: e.target.value}))}
+                                onChange={(e) => updateLogin({ ...loginValues, password: e.target.value })}
                                 required
                                 placeholder="Please enter your password *"
                             />
@@ -55,9 +50,8 @@ function LoginUser({loginValues, setLoginValues}) {
                     </aside>
                 </section>
                 <button type="submit">Login</button>
+                <p>{errorMessage}</p>
             </form>
         </div>
     );
 }
-
-export default LoginUser;

@@ -1,36 +1,42 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {postSecret} from "../../comunication/FetchSecrets";
+import React, {useEffect, useState} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {NoteSecret} from "../../types/secret";
+import {SecretType} from "../../types/secret-type";
+import {useSecret} from "../../context/secret-context";
+import {useLogin} from "../../context/login-context";
 
 /**
  * NewNote
  * @author Peter Rutschmann
  */
-function NewNote({loginValues}) {
-    const initialState = {
-        kindid: 3,
-        kind:"note",
+function NewNote() {
+    const { addSecret } = useSecret();
+    const { checkLogin } = useLogin();
+    const initialState: NoteSecret = {
         title: "",
         content: "",
     };
-    const [noteValues, setNoteValues] = useState(initialState);
+    const [noteValues, setNoteValues] = useState<NoteSecret>(initialState);
     const [errorMessage, setErrorMessage] = useState('');
 
     const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
+    // TODO: change error type
+    const handleSubmit = async (e: any) => {
         e.preventDefault();
         setErrorMessage('');
         try {
-            const content = noteValues;
-            await postSecret({loginValues, content});
+            await addSecret(SecretType.NOTE, noteValues);
             setNoteValues(initialState);
             navigate('/secret/secrets');
-        } catch (error) {
+            // TODO: change error type
+        } catch (error: any) {
             console.error('Failed to fetch to server:', error.message);
             setErrorMessage(error.message);
         }
     };
+
+    useEffect(() => checkLogin(), [])
 
     return (
         <div>

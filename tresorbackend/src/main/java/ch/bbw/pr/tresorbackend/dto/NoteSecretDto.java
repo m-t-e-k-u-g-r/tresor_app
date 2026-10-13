@@ -17,6 +17,11 @@ public class NoteSecretDto extends SecretDto {
     private String content;
 
     @Override
+    public SecretType getType() {
+        return SecretType.NOTE;
+    }
+
+    @Override
     protected NoteSecretDto copy() {
         return new NoteSecretDto(
                 this.getTitle(),

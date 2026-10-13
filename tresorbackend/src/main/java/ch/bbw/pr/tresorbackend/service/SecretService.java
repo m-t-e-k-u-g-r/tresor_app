@@ -50,8 +50,8 @@ public class SecretService {
       return result;
    }
 
-   public void createSecret(User user, SecretType type, SecretDto secretDto) {
-       switch (type) {
+   public void createSecret(User user, SecretDto secretDto) {
+       switch (secretDto.getType()) {
           case CREDENTIAL -> credentialService.createSecret((CredentialSecretDto) secretDto, user);
           case CREDIT_CARD -> creditCardService.createSecret((CreditCardSecretDto) secretDto, user);
           case NOTE -> noteService.createSecret((NoteSecretDto) secretDto, user);
