@@ -7,7 +7,7 @@ import {SecretType} from "../types/secret-type";
 interface SecretContextType {
     secrets: Secret[];
     loadSecrets: () => void;
-    addSecret: (kind: SecretType, secret: Secret) => void;
+    addSecret: (kind: SecretType, secret: Secret) => Promise<void>;
 }
 
 const SecretContext = createContext<SecretContextType | undefined>(undefined);
@@ -26,7 +26,7 @@ export function SecretProvider({ children }: { children: ReactNode }) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     email: credentials.email,
-                    encryptPassword: credentials.password
+                    password: credentials.password
                 })
             });
 
@@ -48,15 +48,18 @@ export function SecretProvider({ children }: { children: ReactNode }) {
         const credentials = loginValues;
 
         try {
-            const response = await fetch(`${API_URL}/secrets/${kind.toString()}`, {
+            const response = await fetch(`${API_URL}/secrets`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     email: credentials.email,
-                    encryptPassword: credentials.password,
-                    content: secret
+                    password: credentials.password,
+                    secret: {
+                        ...secret,
+                        type: SecretType[kind]
+                    }
                 })
             });
 

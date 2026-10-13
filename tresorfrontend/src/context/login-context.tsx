@@ -2,12 +2,14 @@ import {createContext, ReactNode, useContext, useState} from "react";
 import {Login} from "../types/user";
 import {LoginResponse} from "../types/login-response";
 import {getApiUrl} from "../comunication/api-url";
+import {useNavigate} from "react-router-dom";
 
 interface LoginContextType {
+    checkLogin: () => void;
     loginValues: Login;
     updateLogin: (login: Login) => void;
-    signup: (firstName: string, lastName: string, passwordConfirmation: string) => void;
-    login: () => void;
+    signup: (firstName: string, lastName: string, passwordConfirmation: string) => Promise<void>;
+    login: () => Promise<void>;
     userId: number | null;
 }
 
@@ -19,6 +21,12 @@ export function LoginProvider({ children }: { children: ReactNode }) {
         email: "",
         password: "",
     });
+    const navigate = useNavigate();
+
+    function checkLogin() {
+        if (userId != null) return;
+        navigate("/");
+    }
 
     function updateLogin(login: Login) {
         setLoginValues(login);
@@ -81,7 +89,7 @@ export function LoginProvider({ children }: { children: ReactNode }) {
     }
 
     return (
-        <LoginContext.Provider value={{ loginValues, updateLogin, signup, login, userId }}>
+        <LoginContext.Provider value={{ checkLogin, loginValues, updateLogin, signup, login, userId }}>
             {children}
         </LoginContext.Provider>
     )
