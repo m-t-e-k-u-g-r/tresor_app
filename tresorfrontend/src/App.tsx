@@ -14,6 +14,7 @@ import NewCreditCard from "./pages/secret/NewCreditCard";
 import NewNote from "./pages/secret/NewNote";
 import {LoginProvider} from "./context/login-context";
 import {SecretProvider} from "./context/secret-context";
+import {SecurityProvider} from "./context/security-context";
 
 /**
  * App
@@ -22,23 +23,25 @@ import {SecretProvider} from "./context/secret-context";
 export default function App() {
     return (
         <BrowserRouter>
-            <LoginProvider>
-                <SecretProvider>
-                    <Routes>
-                        <Route path="/" element={<Layout />}>
-                            <Route index element={<Home/>}/>
-                            <Route path="/user/users" element={<Users />}/>
-                            <Route path="/user/login" element={<LoginUser />}/>
-                            <Route path="/user/register" element={<RegisterUser />}/>
-                            <Route path="/secret/secrets" element={<Secrets />}/>
-                            <Route path="/secret/newcredential" element={<NewCredential />}/>
-                            <Route path="/secret/newcreditcard" element={<NewCreditCard />}/>
-                            <Route path="/secret/newnote" element={<NewNote />}/>
-                            <Route path="*" element={<NoPage/>}/>
-                        </Route>
-                    </Routes>
-                </SecretProvider>
-            </LoginProvider>
+            <SecurityProvider>
+                <LoginProvider>
+                    <SecretProvider>
+                        <Routes>
+                            <Route path="/" element={<Layout />}>
+                                <Route index element={<Home/>}/>
+                                <Route path="/user/users" element={<Users />}/>
+                                <Route path="/user/login" element={<LoginUser />}/>
+                                <Route path="/user/register" element={<RegisterUser />}/>
+                                <Route path="/secret/secrets" element={<Secrets />}/>
+                                <Route path="/secret/newcredential" element={<NewCredential />}/>
+                                <Route path="/secret/newcreditcard" element={<NewCreditCard />}/>
+                                <Route path="/secret/newnote" element={<NewNote />}/>
+                                <Route path="*" element={<NoPage/>}/>
+                            </Route>
+                        </Routes>
+                    </SecretProvider>
+                </LoginProvider>
+            </SecurityProvider>
         </BrowserRouter>
     )
 }
