@@ -1,18 +1,40 @@
-import { Outlet, Link } from "react-router-dom";
+import {Outlet, Link, useNavigate} from "react-router-dom";
 import {useLogin} from "../context/login-context";
+import {useEffect} from "react";
+import {useSecurity} from "../context/security-context";
 
 /**
  * Layout
  * @author Peter Rutschmann
  */
 const Layout = () => {
-    const { loginValues, userId } = useLogin();
+    const navigate = useNavigate();
+    const { csrfToken } = useSecurity();
+    const { checkLogin, loginValues, userId, isAdmin } = useLogin();
+    const displayAdmin = userId != null && isAdmin;
+
+    function logout() {
+        if (!csrfToken) return;
+        fetch('/logout', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+            }
+        })
+            .then(r => {
+                if (r.ok) navigate('/');
+            });
+    }
+
+    useEffect(() => {
+        checkLogin();
+    }, [])
 
     function userNav() {
         if (userId != null) {
             return (
                 <ul>
-                    <li><a href="/">logout</a></li>
+                    <li><a onClick={() => logout()}>logout</a></li>
                 </ul>
             )
         } else {
@@ -29,7 +51,7 @@ const Layout = () => {
         <>
             <nav>
                 <h1>The secret tresor application</h1>
-                <p>{userId === null ? 'No user logged in' : `user ${userId}:` + loginValues.email}</p>
+                <p>{userId === null ? 'No user logged in' : `user ${userId}: ` + loginValues.email}</p>
                 <ul>
                     {userId != null &&
                         <li><span>Secrets</span>
@@ -44,14 +66,16 @@ const Layout = () => {
                     <li><span>User</span>
                         { userNav() }
                     </li>
-                    <li><span>Admin</span>
-                        <ul>
-                            <li><Link to="/user/users">All users</Link></li>
-                            <li>Add user</li>
-                            <li><Link to="/user/users/:id">Edit user</Link></li>
-                            <li>All secrets</li>
-                        </ul>
-                    </li>
+                    {displayAdmin &&
+                        <li><span>Admin</span>
+                            <ul>
+                                <li><Link to="/user/users">All users</Link></li>
+                                <li>Add user</li>
+                                <li><Link to="/user/users/:id">Edit user</Link></li>
+                                <li>All secrets</li>
+                            </ul>
+                        </li>
+                    }
                     <li>
                         <Link to="/">About</Link>
                     </li>

@@ -1,9 +1,8 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {SecretType} from "../../types/secret-type";
 import {CreditCardSecret} from "../../types/secret";
 import {useSecret} from "../../context/secret-context";
-import {useLogin} from "../../context/login-context";
 
 /**
  * NewCreditCard
@@ -11,7 +10,6 @@ import {useLogin} from "../../context/login-context";
  */
 function NewCreditCard() {
     const { addSecret } = useSecret();
-    const { checkLogin } = useLogin();
     const initialState: CreditCardSecret = {
         cardType: "",
         cardNumber: "",
@@ -36,8 +34,6 @@ function NewCreditCard() {
             setErrorMessage(error.message);
         }
     };
-
-    useEffect(() => checkLogin(), [])
 
     return (
         <div>

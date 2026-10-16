@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.JdbcTypeCode;
 
+import java.io.Serializable;
 import java.sql.Types;
 import java.time.Instant;
 
@@ -15,7 +16,7 @@ import java.time.Instant;
 @Setter
 @Entity
 @Table(name = "\"user\"")
-public class User {
+public class User implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -56,6 +57,10 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "role_id", nullable = false)
+    private UserRole userRole;
 
     @PrePersist
     protected void onCreate() {

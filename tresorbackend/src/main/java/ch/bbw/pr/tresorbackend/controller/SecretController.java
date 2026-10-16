@@ -5,7 +5,6 @@ import ch.bbw.pr.tresorbackend.entities.User;
 import ch.bbw.pr.tresorbackend.service.SecretEncryptionService;
 import ch.bbw.pr.tresorbackend.service.SecretService;
 import ch.bbw.pr.tresorbackend.service.UserService;
-import ch.bbw.pr.tresorbackend.util.ControllerUtil;
 import ch.bbw.pr.tresorbackend.util.ErrorHandler;
 import com.google.gson.Gson;
 import jakarta.validation.Valid;
@@ -13,12 +12,13 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * SecretController
@@ -30,29 +30,24 @@ import java.util.Objects;
 @RequestMapping("api/secrets")
 public class SecretController {
 
+   private final UserService userService;
    private SecretService secretService;
    private SecretEncryptionService encryptionService;
    private ErrorHandler errorHandler;
-   private UserService userService;
-   private ControllerUtil util;
 
    // create secret REST API
-   @PostMapping
+   @PostMapping("/new")
    public ResponseEntity<String> createSecret2(
-           @Valid @RequestBody CreateSecretRequest<? extends SecretDto> createSecretRequest,
+           @Valid @RequestBody SecretDto secretDto,
+           @AuthenticationPrincipal CustomUserDetails userDetails,
            BindingResult bindingResult
    ) {
       //input validation
       if (bindingResult.hasErrors()) return errorHandler.handleErrors(bindingResult, "SecretController.createSecret2");
       log.info("SecretController.createSecret, input validation passed");
 
-      User user = userService.findByEmail(createSecretRequest.getEmail());
-      if (user == null) return ResponseEntity.notFound().build();
-
-      SecretDto encrypted = encryptionService.encryptSecret(
-              createSecretRequest.getSecret(),
-              user.getSalt()
-      );
+      User user = userDetails.getUser();
+      SecretDto encrypted = encryptionService.encryptSecret(secretDto, user.getSalt());
       secretService.createSecret(user, encrypted);
 
       log.info("SecretController.createSecret, secret saved in db");
@@ -62,14 +57,11 @@ public class SecretController {
    }
 
    // Build Get Secrets by userId REST API
-   @PostMapping("/byuserid")
-   public ResponseEntity<List<SecretDto>> getSecretsByUserId(@RequestBody EncryptCredentials credentials) {
-      if (credentials.getUserId() == null) return ResponseEntity.badRequest().build();
-      log.info("SecretController.getSecretsByUserId {}", credentials);
-
-      User user = userService.getUserById(credentials.getUserId());
+   @GetMapping("/byuserid/{userId}")
+   @PreAuthorize("@authz.isAdminOrOwner(#userId, authentication)")
+   public ResponseEntity<List<SecretDto>> getSecretsByUserId(@PathVariable Integer userId) {
+      User user = userService.getUserById(userId);
       if (user == null) return ResponseEntity.notFound().build();
-      util.validatePassword(credentials.getPassword(), user.getPassword(), "SecretController.getSecretsByUserId");
 
       List<SecretDto> secrets = secretService.getSecretsByUserId(user.getId());
       if (secrets.isEmpty()) {
@@ -83,21 +75,15 @@ public class SecretController {
    }
 
    // Build Get Secrets by email REST API
-   @PostMapping("/byemail")
-   public ResponseEntity<List<SecretDto>> getSecretsByEmail(
-           @RequestBody EncryptCredentials credentials
+   @GetMapping
+   public ResponseEntity<List<SecretDto>> getSecrets(
+           @AuthenticationPrincipal CustomUserDetails userDetails
    ) {
-      if (credentials.getEmail() == null) return ResponseEntity.badRequest().build();
-      log.info("SecretController.getSecretsByEmail {}", credentials.getPassword());
-
-      User user = userService.findByEmail(credentials.getEmail());
-      if (user == null) return ResponseEntity.notFound().build();
-      util.validatePassword(credentials.getPassword(), user.getPassword(), "SecretController.getSecretsByEmail");
-
+      User user = userDetails.getUser();
       List<SecretDto> secrets = secretService.getSecretsByUserId(user.getId());
       if (secrets.isEmpty()) {
-         log.info("SecretController.getSecretsByEmail secret isEmpty");
-         return ResponseEntity.notFound().build();
+         log.info("SecretController.getSecretsByEmail no stored secret");
+         return ResponseEntity.noContent().build();
       }
       try {
          List<SecretDto> decrypted = secrets
@@ -111,20 +97,22 @@ public class SecretController {
    }
 
    // Build Get All Secrets REST API
-   // http://localhost:8080/api/secrets
-   @GetMapping
+   // http://localhost:8080/api/secrets/all
+   @GetMapping("/all")
    public ResponseEntity<List<SecretDto>> getAllSecrets() {
       List<SecretDto> secrets = secretService.getAllSecrets();
-      return new ResponseEntity<>(secrets, HttpStatus.OK);
+      if (secrets.isEmpty()) return ResponseEntity.noContent().build();
+      return ResponseEntity.ok(secrets);
    }
 
    // Build Update Secrete REST API
-   // http://localhost:8080/api/secrets/1
+   // http://localhost:8080/api/secrets/NOTE/1
    @PutMapping("/{type}/{id}")
    public ResponseEntity<String> updateSecret(
            @PathVariable("type") String typeString,
            @PathVariable("id") Long secretId,
-           @Valid @RequestBody CreateSecretRequest<? extends SecretDto> createSecretRequest,
+           @Valid @RequestBody SecretDto secretDto,
+           @AuthenticationPrincipal CustomUserDetails userDetails,
            BindingResult bindingResult
    ) {
       //input validation
@@ -133,10 +121,7 @@ public class SecretController {
       SecretType type = SecretType.parseSecretType(typeString);
       if (type == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: Invalid secret type");
 
-      User user = userService.findByEmail(createSecretRequest.getEmail());
-      if (user == null) return ResponseEntity.notFound().build();
-      util.validatePassword(createSecretRequest.getPassword(), user.getPassword(), "SecretsController.updateSecret");
-
+      User user = userDetails.getUser();
       SecretDto dbSecret = secretService.getSecretByIdAndUserId(type, secretId, user.getId());
       if(dbSecret == null){
          log.info("SecretController.updateSecret, secret not found in db");
@@ -149,7 +134,7 @@ public class SecretController {
       } catch (RuntimeException e) {
          return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
       }
-      secretService.updateSecretByIdAndUserId(type, secretId, user.getId(), createSecretRequest.getSecret());
+      secretService.updateSecretByIdAndUserId(type, secretId, user.getId(), secretDto);
 
       log.info("SecretController.updateSecret, secret updated in db");
       String json = new Gson().toJson(Map.of("answer", "Secret updated"));
@@ -162,16 +147,12 @@ public class SecretController {
    public ResponseEntity<String> deleteSecret(
            @PathVariable("type") String typeString,
            @PathVariable("id") Long secretId,
-           @RequestBody EncryptCredentials credentials
+           @AuthenticationPrincipal CustomUserDetails userDetails
    ) {
       SecretType type = SecretType.parseSecretType(typeString);
       if (type == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: Invalid secret type");
 
-      User user = userService.findByEmail(credentials.getEmail());
-      if (user == null || !Objects.equals(credentials.getUserId(), user.getId())) {
-         return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-      }
-
+      User user = userDetails.getUser();
       secretService.deleteSecretByIdAndUserId(type, secretId, user.getId());
       log.info("SecretController.deleteSecret successfully: {}", secretId);
       return ResponseEntity.ok("Secret successfully deleted!");

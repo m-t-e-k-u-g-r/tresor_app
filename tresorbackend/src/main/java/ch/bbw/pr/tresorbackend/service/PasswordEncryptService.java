@@ -1,7 +1,9 @@
 package ch.bbw.pr.tresorbackend.service;
 
 import ch.bbw.pr.tresorbackend.config.EncryptionProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
@@ -17,33 +19,36 @@ import java.util.Base64;
  * @author Peter Rutschmann
  */
 @Service
-public class PasswordEncryptService {
-   private final BCryptPasswordEncoder bcryptEncoder;
+@RequiredArgsConstructor
+public class PasswordEncryptService implements PasswordEncoder {
+   private final BCryptPasswordEncoder bcryptEncoder = new BCryptPasswordEncoder(12);
    private final EncryptionProperties encryptionProperties;
 
-   public PasswordEncryptService(BCryptPasswordEncoder bcryptEncoder, EncryptionProperties encryptionProperties) {
-       this.bcryptEncoder = bcryptEncoder;
-       this.encryptionProperties = encryptionProperties;
-   }
-
-   public String hashPassword(String password) throws Exception {
-      String withPepper = addPepper(password);
+   @Override
+   public String encode(CharSequence rawPassword) {
+      String withPepper = addPepper(rawPassword);
       return bcryptEncoder.encode(withPepper);
    }
 
-   public boolean CheckPassword(String password, String hashed) throws Exception {
-      String withPepper = addPepper(password);
-      return bcryptEncoder.matches(withPepper, hashed);
+   @Override
+   public boolean matches(CharSequence rawPassword, String encodedPassword) {
+      String withPepper = addPepper(rawPassword);
+      return bcryptEncoder.matches(withPepper, encodedPassword);
    }
 
-   private String addPepper(String password) throws NoSuchAlgorithmException, InvalidKeyException {
+   private String addPepper(CharSequence password) {
       String pepper = encryptionProperties.getPepper();
 
-      Mac hmac = Mac.getInstance("HmacSHA256");
-      SecretKeySpec secretKey = new SecretKeySpec(pepper.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-      hmac.init(secretKey);
+      try {
+         Mac hmac = Mac.getInstance("HmacSHA256");
+         SecretKeySpec secretKey = new SecretKeySpec(pepper.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+         hmac.init(secretKey);
 
-      byte[] rawHmac = hmac.doFinal(password.getBytes(StandardCharsets.UTF_8));
-      return Base64.getEncoder().encodeToString(rawHmac);
+         byte[] pwBytes = password.toString().getBytes(StandardCharsets.UTF_8);
+         byte[] rawHmac = hmac.doFinal(pwBytes);
+         return Base64.getEncoder().encodeToString(rawHmac);
+      } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+         throw new RuntimeException("Error adding pepper: " + e.getMessage());
+      }
    }
 }

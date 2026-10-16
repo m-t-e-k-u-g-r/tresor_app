@@ -9,7 +9,7 @@ export const getUsers = async () => {
     const API_URL = getApiUrl();
 
     try {
-        const response = await fetch(`${API_URL}/users`, {
+        const response = await fetch(`${API_URL}/users/all`, {
             method: 'Get',
             headers: {
                 'Accept': 'application/json'

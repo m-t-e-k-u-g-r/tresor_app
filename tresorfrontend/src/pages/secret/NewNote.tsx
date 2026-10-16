@@ -1,9 +1,8 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {NoteSecret} from "../../types/secret";
 import {SecretType} from "../../types/secret-type";
 import {useSecret} from "../../context/secret-context";
-import {useLogin} from "../../context/login-context";
 
 /**
  * NewNote
@@ -11,7 +10,6 @@ import {useLogin} from "../../context/login-context";
  */
 function NewNote() {
     const { addSecret } = useSecret();
-    const { checkLogin } = useLogin();
     const initialState: NoteSecret = {
         title: "",
         content: "",
@@ -35,8 +33,6 @@ function NewNote() {
             setErrorMessage(error.message);
         }
     };
-
-    useEffect(() => checkLogin(), [])
 
     return (
         <div>

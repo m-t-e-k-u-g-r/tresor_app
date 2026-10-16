@@ -2,29 +2,44 @@ import {createContext, ReactNode, useContext, useState} from "react";
 import {Login} from "../types/user";
 import {LoginResponse} from "../types/login-response";
 import {getApiUrl} from "../comunication/api-url";
+import {useSecurity} from "./security-context";
 import {useNavigate} from "react-router-dom";
+import {SignupRequest} from "../types/signup-request";
 
 interface LoginContextType {
-    checkLogin: () => void;
+    checkLogin: () => Promise<void>;
     loginValues: Login;
     updateLogin: (login: Login) => void;
-    signup: (firstName: string, lastName: string, passwordConfirmation: string) => Promise<void>;
+    signup: (request: SignupRequest) => Promise<void>;
     login: () => Promise<void>;
     userId: number | null;
+    isAdmin: boolean;
 }
 
 const LoginContext = createContext<LoginContextType | undefined>(undefined);
 
 export function LoginProvider({ children }: { children: ReactNode }) {
+    const { csrfToken } = useSecurity();
     const [userId, setUserId] = useState<number | null>(null);
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [loginValues, setLoginValues] = useState<Login>({
         email: "",
         password: "",
     });
     const navigate = useNavigate();
 
-    function checkLogin() {
+    async function checkLogin() {
         if (userId != null) return;
+
+        const API_URL = getApiUrl();
+        const response = await fetch(`${API_URL}/auth/check`);
+        if (response.ok) {
+            const data: LoginResponse = await response.json();
+            setUserId(data.userId);
+            setIsAdmin(data.admin);
+            return;
+        }
+
         navigate("/");
     }
 
@@ -32,22 +47,24 @@ export function LoginProvider({ children }: { children: ReactNode }) {
         setLoginValues(login);
     }
 
-    async function signup(firstName: string, lastName: string, passwordConfirmation: string) {
-        if (loginValues.password !== passwordConfirmation) return;
+    async function signup(req: SignupRequest) {
+        if (req.password !== req.passwordConfirmation) throw Error("Invalid password confirmation");
         const API_URL = getApiUrl();
 
         try {
-            const response = await fetch(`${API_URL}/users`, {
+            if (csrfToken == null) return;
+            const response = await fetch(`${API_URL}/users/new`, {
                 method: 'POST',
                 headers: {
+                    'X-CSRF-TOKEN': csrfToken,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    firstName: firstName,
-                    lastName: lastName,
-                    email: loginValues.email,
-                    password: loginValues.password,
-                    passwordConfirmation: passwordConfirmation
+                    firstName: req.firstName,
+                    lastName: req.lastName,
+                    email: req.email,
+                    password: req.password,
+                    passwordConfirmation: req.passwordConfirmation
                 })
             });
 
@@ -64,9 +81,11 @@ export function LoginProvider({ children }: { children: ReactNode }) {
     async function login() {
         const API_URL = getApiUrl();
         try {
+            if (csrfToken == null) return;
             const response = await fetch(`${API_URL}/users/login`, {
                 method: 'POST',
                 headers: {
+                    'X-CSRF-TOKEN': csrfToken,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
@@ -74,7 +93,6 @@ export function LoginProvider({ children }: { children: ReactNode }) {
                     password: loginValues.password
                 })
             });
-            console.log(response);
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Server response failed.');
@@ -82,6 +100,7 @@ export function LoginProvider({ children }: { children: ReactNode }) {
             const data: LoginResponse = await response.json();
             console.log('User successfully logged in:', data);
             setUserId(data.userId);
+            setIsAdmin(data.admin);
         } catch (error: any) {
             console.error('Failed to login user:', error.message);
             throw new Error('Failed to login user. ' + error.message);
@@ -89,7 +108,7 @@ export function LoginProvider({ children }: { children: ReactNode }) {
     }
 
     return (
-        <LoginContext.Provider value={{ checkLogin, loginValues, updateLogin, signup, login, userId }}>
+        <LoginContext.Provider value={{ checkLogin, loginValues, updateLogin, signup, login, userId, isAdmin }}>
             {children}
         </LoginContext.Provider>
     )

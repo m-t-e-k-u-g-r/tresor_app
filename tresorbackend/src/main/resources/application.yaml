@@ -1,6 +1,12 @@
 spring:
   application:
     name: tresorbackend
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      password: ${REDIS_PASSWORD}
+      port: 6379
+      username: ${REDIS_USER}
   datasource:
     url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DATABASE}
     driver-class-name: org.postgresql.Driver
@@ -10,6 +16,8 @@ spring:
     hibernate:
       ddl-auto: none
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+  session:
+    store-type: redis
   sql:
     init:
       mode: never

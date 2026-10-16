@@ -1,6 +1,12 @@
 spring:
   application:
     name: tresorbackend
+  data:
+    redis:
+      host: redis
+      password: redis_dev_pwd
+      port: 6379
+      username: default
   datasource:
     url: jdbc:postgresql://database:5432/devdb
     driver-class-name: org.postgresql.Driver

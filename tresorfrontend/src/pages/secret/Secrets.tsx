@@ -28,8 +28,11 @@ const Secrets = () => {
     }
 
     useEffect(() => {
-        checkLogin();
-        loadSecrets();
+        const load = async () => {
+            await checkLogin();
+            await loadSecrets();
+        }
+        load();
     }, []);
 
     return (
