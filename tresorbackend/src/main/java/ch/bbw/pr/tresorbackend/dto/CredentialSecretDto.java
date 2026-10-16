@@ -2,12 +2,14 @@ package ch.bbw.pr.tresorbackend.dto;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
 @SuperBuilder
+@NoArgsConstructor
 public class CredentialSecretDto extends SecretDto {
     @NotEmpty
     private String username;

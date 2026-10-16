@@ -2,8 +2,8 @@ package ch.bbw.pr.tresorbackend.dto;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
@@ -23,8 +23,8 @@ import java.util.function.Function;
         @JsonSubTypes.Type(value = NoteSecretDto.class, name = "NOTE")
 })
 @SuperBuilder
+@NoArgsConstructor
 public abstract class SecretDto {
-    @NotNull
     private Long id;
 
     public abstract SecretType getType();
