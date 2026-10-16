@@ -2,6 +2,7 @@ import {createContext, ReactNode, useContext, useState} from "react";
 import {Login} from "../types/user";
 import {LoginResponse} from "../types/login-response";
 import {getApiUrl} from "../comunication/api-url";
+import {useSecurity} from "./security-context";
 import {useNavigate} from "react-router-dom";
 import {SignupRequest} from "../types/signup-request";
 
@@ -12,12 +13,15 @@ interface LoginContextType {
     signup: (request: SignupRequest) => Promise<void>;
     login: () => Promise<void>;
     userId: number | null;
+    isAdmin: boolean;
 }
 
 const LoginContext = createContext<LoginContextType | undefined>(undefined);
 
 export function LoginProvider({ children }: { children: ReactNode }) {
+    const { csrfToken, getCsrfToken } = useSecurity();
     const [userId, setUserId] = useState<number | null>(null);
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [loginValues, setLoginValues] = useState<Login>({
         email: "",
         password: "",
@@ -34,13 +38,16 @@ export function LoginProvider({ children }: { children: ReactNode }) {
     }
 
     async function signup(req: SignupRequest) {
-        if (req.password != req.passwordConfirmation) throw Error("Invalid password confirmation");
+        if (req.password !== req.passwordConfirmation) throw Error("Invalid password confirmation");
         const API_URL = getApiUrl();
 
         try {
-            const response = await fetch(`${API_URL}/users`, {
+            if (csrfToken == null) await getCsrfToken();
+            if (csrfToken == null) return;
+            const response = await fetch(`${API_URL}/users/new`, {
                 method: 'POST',
                 headers: {
+                    'X-CSRF-TOKEN': csrfToken,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
@@ -65,9 +72,12 @@ export function LoginProvider({ children }: { children: ReactNode }) {
     async function login() {
         const API_URL = getApiUrl();
         try {
+            if (csrfToken == null) await getCsrfToken();
+            if (csrfToken == null) return;
             const response = await fetch(`${API_URL}/users/login`, {
                 method: 'POST',
                 headers: {
+                    'X-CSRF-TOKEN': csrfToken,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
@@ -75,7 +85,6 @@ export function LoginProvider({ children }: { children: ReactNode }) {
                     password: loginValues.password
                 })
             });
-            console.log(response);
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Server response failed.');
@@ -83,6 +92,7 @@ export function LoginProvider({ children }: { children: ReactNode }) {
             const data: LoginResponse = await response.json();
             console.log('User successfully logged in:', data);
             setUserId(data.userId);
+            setIsAdmin(data.isAdmin);
         } catch (error: any) {
             console.error('Failed to login user:', error.message);
             throw new Error('Failed to login user. ' + error.message);
@@ -90,7 +100,7 @@ export function LoginProvider({ children }: { children: ReactNode }) {
     }
 
     return (
-        <LoginContext.Provider value={{ checkLogin, loginValues, updateLogin, signup, login, userId }}>
+        <LoginContext.Provider value={{ checkLogin, loginValues, updateLogin, signup, login, userId, isAdmin }}>
             {children}
         </LoginContext.Provider>
     )

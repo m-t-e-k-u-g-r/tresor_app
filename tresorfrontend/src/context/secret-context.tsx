@@ -1,7 +1,7 @@
 import {createContext, ReactNode, useContext, useState} from "react";
 import {Secret} from "../types/secret";
 import {getApiUrl} from "../comunication/api-url";
-import {useLogin} from "./login-context";
+import {useSecurity} from "./security-context";
 import {SecretType} from "../types/secret-type";
 
 interface SecretContextType {
@@ -14,27 +14,31 @@ const SecretContext = createContext<SecretContextType | undefined>(undefined);
 
 export function SecretProvider({ children }: { children: ReactNode }) {
     const [secrets, setSecrets] = useState<Secret[]>([]);
-    const { loginValues } = useLogin();
+    const { csrfToken, getCsrfToken } = useSecurity();
 
     async function loadSecrets() {
         const API_URL = getApiUrl();
-        const credentials = loginValues;
 
         try {
-            const response = await fetch(`${API_URL}/secrets/byemail`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email: credentials.email,
-                    password: credentials.password
-                })
+            if (csrfToken == null) await getCsrfToken();
+            if (csrfToken == null) return;
+            const response = await fetch(`${API_URL}/secrets`, {
+                method: 'GET',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Content-Type': 'application/json'
+                }
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Server response failed.');
             }
-            const data = await response.json();
+            if (response.status == 204) {
+                console.log('No secrets retrieved');
+                return;
+            }
+            const data: Secret[] = await response.json();
             console.log('Secrets successfully got:', data);
             setSecrets(data)
         } catch (e: any) {
@@ -45,21 +49,19 @@ export function SecretProvider({ children }: { children: ReactNode }) {
 
     async function addSecret(kind: SecretType, secret: Secret) {
         const API_URL = getApiUrl();
-        const credentials = loginValues;
 
         try {
-            const response = await fetch(`${API_URL}/secrets`, {
+            if (csrfToken == null) await getCsrfToken();
+            if (csrfToken == null) return;
+            const response = await fetch(`${API_URL}/secrets/new`, {
                 method: 'POST',
                 headers: {
+                    'X-CSRF-TOKEN': csrfToken,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    email: credentials.email,
-                    password: credentials.password,
-                    secret: {
-                        ...secret,
-                        type: SecretType[kind]
-                    }
+                    ...secret,
+                    type: SecretType[kind]
                 })
             });
 
