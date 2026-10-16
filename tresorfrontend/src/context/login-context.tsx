@@ -92,7 +92,7 @@ export function LoginProvider({ children }: { children: ReactNode }) {
             const data: LoginResponse = await response.json();
             console.log('User successfully logged in:', data);
             setUserId(data.userId);
-            setIsAdmin(data.isAdmin);
+            setIsAdmin(data.admin);
         } catch (error: any) {
             console.error('Failed to login user:', error.message);
             throw new Error('Failed to login user. ' + error.message);
