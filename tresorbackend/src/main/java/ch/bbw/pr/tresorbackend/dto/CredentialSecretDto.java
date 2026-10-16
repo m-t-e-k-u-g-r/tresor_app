@@ -1,15 +1,13 @@
 package ch.bbw.pr.tresorbackend.dto;
 
 import jakarta.validation.constraints.NotEmpty;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
+@SuperBuilder
 public class CredentialSecretDto extends SecretDto {
     @NotEmpty
     private String username;
@@ -25,10 +23,11 @@ public class CredentialSecretDto extends SecretDto {
 
     @Override
     protected CredentialSecretDto copy() {
-        return new CredentialSecretDto(
-                this.getUsername(),
-                this.getPassword(),
-                this.getUrl()
-        );
+        return CredentialSecretDto.builder()
+                .id(this.getId())
+                .username(this.getUsername())
+                .password(this.getPassword())
+                .url(this.getUrl())
+                .build();
     }
 }

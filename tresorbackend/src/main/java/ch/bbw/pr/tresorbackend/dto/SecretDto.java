@@ -2,9 +2,10 @@ package ch.bbw.pr.tresorbackend.dto;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.sun.jdi.InvalidTypeException;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 import java.lang.reflect.Field;
 import java.util.function.Function;
@@ -21,7 +22,10 @@ import java.util.function.Function;
         @JsonSubTypes.Type(value = CreditCardSecretDto.class, name = "CREDIT_CARD"),
         @JsonSubTypes.Type(value = NoteSecretDto.class, name = "NOTE")
 })
+@SuperBuilder
 public abstract class SecretDto {
+    @NotNull
+    private Long id;
 
     public abstract SecretType getType();
 
