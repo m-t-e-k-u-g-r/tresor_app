@@ -17,4 +17,5 @@ import lombok.Setter;
 public class LoginResponse {
     private String message;
     private Integer userId;
+    private boolean isAdmin;
 }
