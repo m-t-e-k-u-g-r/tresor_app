@@ -9,8 +9,8 @@ import {useSecret} from "../../context/secret-context";
  * @author Peter Rutschmann
  */
 function NewNote() {
-    const { addSecret } = useSecret();
-    const initialState: CreateNoteSecret = {
+    const { addSecret, editSecret, editNote } = useSecret();
+    const initialState: CreateNoteSecret = editNote ?? {
         title: "",
         content: "",
     };
@@ -24,7 +24,11 @@ function NewNote() {
         e.preventDefault();
         setErrorMessage('');
         try {
-            await addSecret(SecretType.NOTE, noteValues);
+            if (editNote) {
+                await editSecret(SecretType.NOTE, editNote.id, noteValues)
+            } else {
+                await addSecret(SecretType.NOTE, noteValues);
+            }
             setNoteValues(initialState);
             navigate('/secret/secrets');
             // TODO: change error type
@@ -34,9 +38,17 @@ function NewNote() {
         }
     };
 
+    function header() {
+        if (editNote == null) {
+            return <h2>Add new note secret</h2>
+        } else {
+            return <h2>Update note secret { editNote.id }</h2>
+        }
+    }
+
     return (
         <div>
-            <h2>Add new note secret</h2>
+            { header() }
             <form onSubmit={handleSubmit}>
                 <section>
                     <aside>
