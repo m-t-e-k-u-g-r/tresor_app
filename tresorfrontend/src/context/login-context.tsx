@@ -3,12 +3,13 @@ import {Login} from "../types/user";
 import {LoginResponse} from "../types/login-response";
 import {getApiUrl} from "../comunication/api-url";
 import {useNavigate} from "react-router-dom";
+import {SignupRequest} from "../types/signup-request";
 
 interface LoginContextType {
     checkLogin: () => void;
     loginValues: Login;
     updateLogin: (login: Login) => void;
-    signup: (firstName: string, lastName: string, passwordConfirmation: string) => Promise<void>;
+    signup: (request: SignupRequest) => Promise<void>;
     login: () => Promise<void>;
     userId: number | null;
 }
@@ -32,8 +33,8 @@ export function LoginProvider({ children }: { children: ReactNode }) {
         setLoginValues(login);
     }
 
-    async function signup(firstName: string, lastName: string, passwordConfirmation: string) {
-        if (loginValues.password !== passwordConfirmation) return;
+    async function signup(req: SignupRequest) {
+        if (req.password != req.passwordConfirmation) throw Error("Invalid password confirmation");
         const API_URL = getApiUrl();
 
         try {
@@ -43,11 +44,11 @@ export function LoginProvider({ children }: { children: ReactNode }) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    firstName: firstName,
-                    lastName: lastName,
-                    email: loginValues.email,
-                    password: loginValues.password,
-                    passwordConfirmation: passwordConfirmation
+                    firstName: req.firstName,
+                    lastName: req.lastName,
+                    email: req.email,
+                    password: req.password,
+                    passwordConfirmation: req.passwordConfirmation
                 })
             });
 

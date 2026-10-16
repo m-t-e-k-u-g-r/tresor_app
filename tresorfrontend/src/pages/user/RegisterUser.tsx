@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {useLogin} from "../../context/login-context";
+import {SignupForm} from "../../types/signup-request";
 
 /**
  * RegisterUser
  * @author Peter Rutschmann
  */
 function RegisterUser() {
-    const { updateLogin, signup } = useLogin();
+    const { signup } = useLogin();
     const navigate = useNavigate();
 
-    const initialState = {
+    const initialState: SignupForm = {
         firstName: "",
         lastName: "",
         email: "",
@@ -18,7 +19,7 @@ function RegisterUser() {
         passwordConfirmation: "",
         errorMessage: ""
     };
-    const [credentials, setCredentials] = useState(initialState);
+    const [credentials, setCredentials] = useState<SignupForm>(initialState);
     const [errorMessage, setErrorMessage] = useState('');
 
     const handleSubmit = async (e: any) => {
@@ -32,8 +33,7 @@ function RegisterUser() {
             return;
         }
 
-        updateLogin({ email: credentials.email, password: credentials.password });
-        await signup(credentials.firstName, credentials.lastName, credentials.passwordConfirmation);
+        await signup(credentials);
         setCredentials(initialState);
         navigate('/');
     };
