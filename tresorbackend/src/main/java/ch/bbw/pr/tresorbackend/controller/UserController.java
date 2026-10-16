@@ -86,16 +86,19 @@ public class UserController {
       }
       User savedUser = userService.createUser(user);
       JsonObject obj = new JsonObject();
+      HttpStatus status;
       if (savedUser != null) {
          log.info("UserController.createUser, user saved in db");
          obj.addProperty("answer", "User saved");
+         status = HttpStatus.ACCEPTED;
       } else {
          log.info("UserController.createUser, user not saved in db");
          obj.addProperty("answer", "User not saved");
+         status = HttpStatus.INTERNAL_SERVER_ERROR;
       }
       String json = new Gson().toJson(obj);
       log.info("UserController.createUser {}", json);
-      return ResponseEntity.accepted().body(json);
+      return ResponseEntity.status(status).body(json);
    }
 
    // build get user by id REST API
@@ -168,7 +171,7 @@ public class UserController {
 
    // simple login with no websecurity, just name and password
    @PostMapping("/login")
-   public ResponseEntity<LoginResponse> doLoginUser(
+   public ResponseEntity<AuthResponse> doLoginUser(
            HttpServletRequest request,
            HttpServletResponse response,
            @RequestBody LoginUser loginUser
@@ -191,7 +194,7 @@ public class UserController {
       log.info("UserController.doLoginUser: {}", context.getAuthentication().getAuthorities().stream().findFirst());
       boolean isAdmin = context.getAuthentication().getAuthorities().stream()
               .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-      return ResponseEntity.ok(new LoginResponse("Login successful", user.getId(), isAdmin));
+      return ResponseEntity.ok(new AuthResponse(user.getId(), isAdmin));
    }
 
 }
