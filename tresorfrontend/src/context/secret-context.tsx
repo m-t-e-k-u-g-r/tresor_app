@@ -8,6 +8,7 @@ interface SecretContextType {
     secrets: Secret[];
     loadSecrets: () => Promise<void>;
     addSecret: (kind: SecretType, secret: CreateSecret) => Promise<void>;
+    deleteSecret: (kind: SecretType, id: number) => Promise<void>;
 }
 
 const SecretContext = createContext<SecretContextType | undefined>(undefined);
@@ -77,8 +78,32 @@ export function SecretProvider({ children }: { children: ReactNode }) {
         }
     }
 
+    async function deleteSecret(kind: SecretType, id: number) {
+        const API_URL = getApiUrl();
+
+        try {
+            if (csrfToken == null) return;
+            const type = SecretType[kind];
+            const response = await fetch(`${API_URL}/secrets/${type}/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Content-Type': 'application/json'
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Server response failed.');
+            }
+        } catch (error: any) {
+            console.error('Error deleting secret:', error.message);
+            throw new Error('Failed to delete secret. ' || error.message);
+        }
+    }
+
     return (
-        <SecretContext.Provider value={{ secrets, loadSecrets, addSecret }} >
+        <SecretContext.Provider value={{ secrets, loadSecrets, addSecret, deleteSecret }} >
             {children}
         </SecretContext.Provider>
     )
