@@ -60,7 +60,7 @@ public class UserController {
 
       user.setSalt(Base64.getEncoder().encodeToString(salt));
       try {
-         user.setPassword(passwordService.hashPassword(registerUser.getPassword()));
+         user.setPassword(passwordService.encode(registerUser.getPassword()));
       } catch (Exception e) {
          log.error("UserController.createUser failed to hash password");
          throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);

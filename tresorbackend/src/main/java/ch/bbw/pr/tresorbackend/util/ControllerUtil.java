@@ -18,7 +18,7 @@ public class ControllerUtil {
     public void validatePassword(String providedPassword, String savedPassword, String controllerMethod) {
         boolean valid;
         try {
-            valid = passwordEncryptService.CheckPassword(providedPassword, savedPassword);
+            valid = passwordEncryptService.matches(providedPassword, savedPassword);
         } catch (Exception e) {
             log.error("{} Failed to check password {}", controllerMethod, e.getMessage());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
