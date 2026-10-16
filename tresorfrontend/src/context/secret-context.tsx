@@ -1,5 +1,5 @@
 import {createContext, ReactNode, useContext, useState} from "react";
-import {Secret} from "../types/secret";
+import {CreateSecret, Secret} from "../types/secret";
 import {getApiUrl} from "../comunication/api-url";
 import {useSecurity} from "./security-context";
 import {SecretType} from "../types/secret-type";
@@ -7,7 +7,7 @@ import {SecretType} from "../types/secret-type";
 interface SecretContextType {
     secrets: Secret[];
     loadSecrets: () => Promise<void>;
-    addSecret: (kind: SecretType, secret: Secret) => Promise<void>;
+    addSecret: (kind: SecretType, secret: CreateSecret) => Promise<void>;
 }
 
 const SecretContext = createContext<SecretContextType | undefined>(undefined);
@@ -33,7 +33,7 @@ export function SecretProvider({ children }: { children: ReactNode }) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Server response failed.');
             }
-            if (response.status == 204) {
+            if (response.status === 204) {
                 console.log('No secrets retrieved');
                 return;
             }
@@ -46,7 +46,7 @@ export function SecretProvider({ children }: { children: ReactNode }) {
         }
     }
 
-    async function addSecret(kind: SecretType, secret: Secret) {
+    async function addSecret(kind: SecretType, secret: CreateSecret) {
         const API_URL = getApiUrl();
 
         try {

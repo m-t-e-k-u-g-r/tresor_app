@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {SecretType} from "../../types/secret-type";
-import {CreditCardSecret} from "../../types/secret";
+import {CreateCreditCardSecret} from "../../types/secret";
 import {useSecret} from "../../context/secret-context";
 
 /**
@@ -10,13 +10,13 @@ import {useSecret} from "../../context/secret-context";
  */
 function NewCreditCard() {
     const { addSecret } = useSecret();
-    const initialState: CreditCardSecret = {
+    const initialState: CreateCreditCardSecret = {
         cardType: "",
         cardNumber: "",
         expiration: "",
         cvv: ""
     };
-    const [creditCardValues, setCreditCardValues] = useState<CreditCardSecret>(initialState);
+    const [creditCardValues, setCreditCardValues] = useState<CreateCreditCardSecret>(initialState);
     const [errorMessage, setErrorMessage] = useState('');
 
     const navigate = useNavigate();

@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {NoteSecret} from "../../types/secret";
+import {CreateNoteSecret} from "../../types/secret";
 import {SecretType} from "../../types/secret-type";
 import {useSecret} from "../../context/secret-context";
 
@@ -10,11 +10,11 @@ import {useSecret} from "../../context/secret-context";
  */
 function NewNote() {
     const { addSecret } = useSecret();
-    const initialState: NoteSecret = {
+    const initialState: CreateNoteSecret = {
         title: "",
         content: "",
     };
-    const [noteValues, setNoteValues] = useState<NoteSecret>(initialState);
+    const [noteValues, setNoteValues] = useState<CreateNoteSecret>(initialState);
     const [errorMessage, setErrorMessage] = useState('');
 
     const navigate = useNavigate();

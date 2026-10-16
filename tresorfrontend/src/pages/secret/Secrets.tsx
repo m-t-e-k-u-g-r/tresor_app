@@ -45,6 +45,7 @@ const Secrets = () => {
                     <table border={1}>
                         <thead>
                         <tr>
+                            <th>Id</th>
                             <th>Username</th>
                             <th>Password</th>
                             <th>URL</th>
@@ -52,8 +53,9 @@ const Secrets = () => {
                         </thead>
                         <tbody>
                         {credentials?.length > 0 ? (
-                            credentials.map((secret: CredentialSecret, index: number) => (
-                                <tr key={index}>
+                            credentials.map((secret: CredentialSecret) => (
+                                <tr key={secret.id}>
+                                    <td>{secret.id}</td>
                                     <td>{secret.username}</td>
                                     <td>{secret.password}</td>
                                     <td>{secret.url}</td>
@@ -61,7 +63,7 @@ const Secrets = () => {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={3}>No credentials available</td>
+                                <td colSpan={4}>No credentials available</td>
                             </tr>
                         )}
                         </tbody>
@@ -73,6 +75,7 @@ const Secrets = () => {
                     <table border={1}>
                         <thead>
                         <tr>
+                            <th>Id</th>
                             <th>Card Type</th>
                             <th>Card Number</th>
                             <th>Expiration</th>
@@ -81,8 +84,9 @@ const Secrets = () => {
                         </thead>
                         <tbody>
                         {creditCards?.length > 0 ? (
-                            creditCards.map((secret: CreditCardSecret, index: number) => (
-                                <tr key={index}>
+                            creditCards.map((secret: CreditCardSecret) => (
+                                <tr key={secret.id}>
+                                    <td>{secret.id}</td>
                                     <td>{secret.cardType}</td>
                                     <td>{secret.cardNumber}</td>
                                     <td>{secret.expiration}</td>
@@ -91,7 +95,7 @@ const Secrets = () => {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={4}>No credit cards available</td>
+                                <td colSpan={5}>No credit cards available</td>
                             </tr>
                         )}
                         </tbody>
@@ -103,21 +107,23 @@ const Secrets = () => {
                     <table border={1}>
                         <thead>
                             <tr>
+                                <th>Id</th>
                                 <th>Title</th>
                                 <th>Content</th>
                             </tr>
                         </thead>
                         <tbody>
                         {notes?.length > 0 ? (
-                            notes.map((secret: NoteSecret, index: number) => (
-                                <tr key={index}>
+                            notes.map((secret: NoteSecret) => (
+                                <tr key={secret.id}>
+                                    <td>{secret.id}</td>
                                     <td>{secret.title}</td>
                                     <td>{secret.content}</td>
                                 </tr>
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={2}>No notes available</td>
+                                <td colSpan={3}>No notes available</td>
                             </tr>
                         )}
                         </tbody>

@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 import {SecretType} from "../../types/secret-type";
-import {CredentialSecret} from "../../types/secret";
+import {CreateCredentialSecret} from "../../types/secret";
 import {useLogin} from "../../context/login-context";
 import {useSecret} from "../../context/secret-context";
 
@@ -12,12 +12,12 @@ import {useSecret} from "../../context/secret-context";
 function NewCredential() {
     const { loginValues } = useLogin();
     const { addSecret } = useSecret();
-    const initialState: CredentialSecret = {
+    const initialState: CreateCredentialSecret = {
         username: "",
         password: "",
         url: ""
     };
-    const [credentialValues, setCredentialValues] = useState<CredentialSecret>(initialState);
+    const [credentialValues, setCredentialValues] = useState<CreateCredentialSecret>(initialState);
     const [errorMessage, setErrorMessage] = useState('');
 
     const navigate = useNavigate();
