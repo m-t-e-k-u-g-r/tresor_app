@@ -134,7 +134,8 @@ public class SecretController {
       } catch (RuntimeException e) {
          return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
       }
-      secretService.updateSecretByIdAndUserId(type, secretId, user.getId(), secretDto);
+      SecretDto encrypted = encryptionService.encryptSecret(secretDto, user.getSalt());
+      secretService.updateSecretByIdAndUserId(type, secretId, user.getId(), encrypted);
 
       log.info("SecretController.updateSecret, secret updated in db");
       String json = new Gson().toJson(Map.of("answer", "Secret updated"));
