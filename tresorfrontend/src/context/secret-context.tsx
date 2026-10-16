@@ -6,7 +6,7 @@ import {SecretType} from "../types/secret-type";
 
 interface SecretContextType {
     secrets: Secret[];
-    loadSecrets: () => void;
+    loadSecrets: () => Promise<void>;
     addSecret: (kind: SecretType, secret: Secret) => Promise<void>;
 }
 
@@ -14,13 +14,12 @@ const SecretContext = createContext<SecretContextType | undefined>(undefined);
 
 export function SecretProvider({ children }: { children: ReactNode }) {
     const [secrets, setSecrets] = useState<Secret[]>([]);
-    const { csrfToken, getCsrfToken } = useSecurity();
+    const { csrfToken } = useSecurity();
 
     async function loadSecrets() {
         const API_URL = getApiUrl();
 
         try {
-            if (csrfToken == null) await getCsrfToken();
             if (csrfToken == null) return;
             const response = await fetch(`${API_URL}/secrets`, {
                 method: 'GET',
@@ -51,7 +50,6 @@ export function SecretProvider({ children }: { children: ReactNode }) {
         const API_URL = getApiUrl();
 
         try {
-            if (csrfToken == null) await getCsrfToken();
             if (csrfToken == null) return;
             const response = await fetch(`${API_URL}/secrets/new`, {
                 method: 'POST',

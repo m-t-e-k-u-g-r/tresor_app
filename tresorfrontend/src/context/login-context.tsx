@@ -7,7 +7,7 @@ import {useNavigate} from "react-router-dom";
 import {SignupRequest} from "../types/signup-request";
 
 interface LoginContextType {
-    checkLogin: () => void;
+    checkLogin: () => Promise<void>;
     loginValues: Login;
     updateLogin: (login: Login) => void;
     signup: (request: SignupRequest) => Promise<void>;
@@ -19,7 +19,7 @@ interface LoginContextType {
 const LoginContext = createContext<LoginContextType | undefined>(undefined);
 
 export function LoginProvider({ children }: { children: ReactNode }) {
-    const { csrfToken, getCsrfToken } = useSecurity();
+    const { csrfToken } = useSecurity();
     const [userId, setUserId] = useState<number | null>(null);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [loginValues, setLoginValues] = useState<Login>({
@@ -28,8 +28,18 @@ export function LoginProvider({ children }: { children: ReactNode }) {
     });
     const navigate = useNavigate();
 
-    function checkLogin() {
+    async function checkLogin() {
         if (userId != null) return;
+
+        const API_URL = getApiUrl();
+        const response = await fetch(`${API_URL}/auth/check`);
+        if (response.ok) {
+            const data: LoginResponse = await response.json();
+            setUserId(data.userId);
+            setIsAdmin(data.admin);
+            return;
+        }
+
         navigate("/");
     }
 
@@ -42,7 +52,6 @@ export function LoginProvider({ children }: { children: ReactNode }) {
         const API_URL = getApiUrl();
 
         try {
-            if (csrfToken == null) await getCsrfToken();
             if (csrfToken == null) return;
             const response = await fetch(`${API_URL}/users/new`, {
                 method: 'POST',
@@ -72,7 +81,6 @@ export function LoginProvider({ children }: { children: ReactNode }) {
     async function login() {
         const API_URL = getApiUrl();
         try {
-            if (csrfToken == null) await getCsrfToken();
             if (csrfToken == null) return;
             const response = await fetch(`${API_URL}/users/login`, {
                 method: 'POST',

@@ -4,7 +4,6 @@ import {CsrfResponse} from "../types/csrf-response";
 
 interface SecurityContextType {
     csrfToken: string | undefined;
-    getCsrfToken: () => Promise<void>;
 }
 
 const SecurityContext = createContext<SecurityContextType | undefined>(undefined);
@@ -42,7 +41,7 @@ export function SecurityProvider({ children }: { children: ReactNode }) {
     }
 
     return (
-        <SecurityContext.Provider value={{ csrfToken, getCsrfToken }} >
+        <SecurityContext.Provider value={{ csrfToken }} >
             {children}
         </SecurityContext.Provider>
     )
