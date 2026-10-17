@@ -1,0 +1,3 @@
+ALTER TABLE "user"
+ADD FOREIGN KEY (role_id) REFERENCES user_role(id)
+ON DELETE CASCADE;
