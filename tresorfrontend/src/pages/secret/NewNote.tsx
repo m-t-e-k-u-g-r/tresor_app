@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {NoteSecret} from "../../types/secret";
+import {CreateNoteSecret} from "../../types/secret";
 import {SecretType} from "../../types/secret-type";
 import {useSecret} from "../../context/secret-context";
 
@@ -9,12 +9,12 @@ import {useSecret} from "../../context/secret-context";
  * @author Peter Rutschmann
  */
 function NewNote() {
-    const { addSecret } = useSecret();
-    const initialState: NoteSecret = {
+    const { addSecret, editSecret, editNote } = useSecret();
+    const initialState: CreateNoteSecret = editNote ?? {
         title: "",
         content: "",
     };
-    const [noteValues, setNoteValues] = useState<NoteSecret>(initialState);
+    const [noteValues, setNoteValues] = useState<CreateNoteSecret>(initialState);
     const [errorMessage, setErrorMessage] = useState('');
 
     const navigate = useNavigate();
@@ -24,7 +24,11 @@ function NewNote() {
         e.preventDefault();
         setErrorMessage('');
         try {
-            await addSecret(SecretType.NOTE, noteValues);
+            if (editNote) {
+                await editSecret(SecretType.NOTE, editNote.id, noteValues)
+            } else {
+                await addSecret(SecretType.NOTE, noteValues);
+            }
             setNoteValues(initialState);
             navigate('/secret/secrets');
             // TODO: change error type
@@ -34,9 +38,17 @@ function NewNote() {
         }
     };
 
+    function header() {
+        if (editNote == null) {
+            return <h2>Add new note secret</h2>
+        } else {
+            return <h2>Update note secret { editNote.id }</h2>
+        }
+    }
+
     return (
         <div>
-            <h2>Add new note secret</h2>
+            { header() }
             <form onSubmit={handleSubmit}>
                 <section>
                     <aside>

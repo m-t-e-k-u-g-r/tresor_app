@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {SecretType} from "../../types/secret-type";
-import {CreditCardSecret} from "../../types/secret";
+import {CreateCreditCardSecret} from "../../types/secret";
 import {useSecret} from "../../context/secret-context";
 
 /**
@@ -9,14 +9,14 @@ import {useSecret} from "../../context/secret-context";
  * @author Peter Rutschmann
  */
 function NewCreditCard() {
-    const { addSecret } = useSecret();
-    const initialState: CreditCardSecret = {
+    const { addSecret, editSecret, editCreditCard } = useSecret();
+    const initialState: CreateCreditCardSecret = editCreditCard ?? {
         cardType: "",
         cardNumber: "",
         expiration: "",
         cvv: ""
     };
-    const [creditCardValues, setCreditCardValues] = useState<CreditCardSecret>(initialState);
+    const [creditCardValues, setCreditCardValues] = useState<CreateCreditCardSecret>(initialState);
     const [errorMessage, setErrorMessage] = useState('');
 
     const navigate = useNavigate();
@@ -26,7 +26,11 @@ function NewCreditCard() {
         e.preventDefault();
         setErrorMessage('');
         try {
-            await addSecret(SecretType.CREDIT_CARD, creditCardValues);
+            if (editCreditCard) {
+                await editSecret(SecretType.CREDIT_CARD, editCreditCard.id, creditCardValues)
+            } else {
+                await addSecret(SecretType.CREDIT_CARD, creditCardValues);
+            }
             setCreditCardValues(initialState);
             navigate('/secret/secrets');
         } catch (error: any) {
@@ -35,9 +39,17 @@ function NewCreditCard() {
         }
     };
 
+    function header() {
+        if (editCreditCard == null) {
+            return <h2>Add new credit-card secret</h2>
+        } else {
+            return <h2>Update credit-card secret { editCreditCard.id }</h2>
+        }
+    }
+
     return (
         <div>
-            <h2>Add new credit-card secret</h2>
+            { header() }
             <form onSubmit={handleSubmit}>
                 <section>
                     <aside>

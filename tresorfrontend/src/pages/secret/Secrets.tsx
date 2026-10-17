@@ -3,6 +3,8 @@ import React, {useEffect} from 'react';
 import {useLogin} from "../../context/login-context";
 import {useSecret} from "../../context/secret-context";
 import {CredentialSecret, CreditCardSecret, NoteSecret, Secret} from "../../types/secret";
+import {SquarePen, Trash2} from "lucide-react";
+import {SecretType} from "../../types/secret-type";
 
 /**
  * Secrets
@@ -10,7 +12,7 @@ import {CredentialSecret, CreditCardSecret, NoteSecret, Secret} from "../../type
  */
 const Secrets = () => {
     const { checkLogin } = useLogin();
-    const { secrets, loadSecrets } = useSecret();
+    const { secrets, loadSecrets, setEditSecret, deleteSecret } = useSecret();
     const credentials = secrets.filter(isCredentialSecret);
     const creditCards = secrets.filter(isCreditCardSecret);
     const notes = secrets.filter(isNoteSecret);
@@ -45,23 +47,33 @@ const Secrets = () => {
                     <table border={1}>
                         <thead>
                         <tr>
+                            <th>Id</th>
                             <th>Username</th>
                             <th>Password</th>
                             <th>URL</th>
+                            <th>Edit</th>
+                            <th>Delete</th>
                         </tr>
                         </thead>
                         <tbody>
                         {credentials?.length > 0 ? (
-                            credentials.map((secret: CredentialSecret, index: number) => (
-                                <tr key={index}>
+                            credentials.map((secret: CredentialSecret) => (
+                                <tr key={secret.id}>
+                                    <td>{secret.id}</td>
                                     <td>{secret.username}</td>
                                     <td>{secret.password}</td>
                                     <td>{secret.url}</td>
+                                    <td><button onClick={() => setEditSecret(SecretType.CREDENTIAL, secret)}>
+                                        <SquarePen color="yellow" size={15} />
+                                    </button></td>
+                                    <td><button onClick={() => deleteSecret(SecretType.CREDENTIAL, secret.id)}>
+                                        <Trash2 color="red" size={15} />
+                                    </button></td>
                                 </tr>
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={3}>No credentials available</td>
+                                <td colSpan={5}>No credentials available</td>
                             </tr>
                         )}
                         </tbody>
@@ -73,25 +85,34 @@ const Secrets = () => {
                     <table border={1}>
                         <thead>
                         <tr>
+                            <th>Id</th>
                             <th>Card Type</th>
                             <th>Card Number</th>
                             <th>Expiration</th>
                             <th>CVV</th>
+                            <th>Delete</th>
                         </tr>
                         </thead>
                         <tbody>
                         {creditCards?.length > 0 ? (
-                            creditCards.map((secret: CreditCardSecret, index: number) => (
-                                <tr key={index}>
+                            creditCards.map((secret: CreditCardSecret) => (
+                                <tr key={secret.id}>
+                                    <td>{secret.id}</td>
                                     <td>{secret.cardType}</td>
                                     <td>{secret.cardNumber}</td>
                                     <td>{secret.expiration}</td>
                                     <td>{secret.cvv}</td>
+                                    <td><button onClick={() => setEditSecret(SecretType.CREDIT_CARD, secret)}>
+                                        <SquarePen color="yellow" size={15} />
+                                    </button></td>
+                                    <td><button onClick={() => deleteSecret(SecretType.CREDIT_CARD, secret.id)}>
+                                        <Trash2 color="red" size={15} />
+                                    </button></td>
                                 </tr>
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={4}>No credit cards available</td>
+                                <td colSpan={6}>No credit cards available</td>
                             </tr>
                         )}
                         </tbody>
@@ -103,21 +124,30 @@ const Secrets = () => {
                     <table border={1}>
                         <thead>
                             <tr>
+                                <th>Id</th>
                                 <th>Title</th>
                                 <th>Content</th>
+                                <th>Delete</th>
                             </tr>
                         </thead>
                         <tbody>
                         {notes?.length > 0 ? (
-                            notes.map((secret: NoteSecret, index: number) => (
-                                <tr key={index}>
+                            notes.map((secret: NoteSecret) => (
+                                <tr key={secret.id}>
+                                    <td>{secret.id}</td>
                                     <td>{secret.title}</td>
                                     <td>{secret.content}</td>
+                                    <td><button onClick={() => setEditSecret(SecretType.NOTE, secret)}>
+                                        <SquarePen color="yellow" size={15} />
+                                    </button></td>
+                                    <td><button onClick={() => deleteSecret(SecretType.NOTE, secret.id)}>
+                                        <Trash2 color="red" size={15} />
+                                    </button></td>
                                 </tr>
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={2}>No notes available</td>
+                                <td colSpan={4}>No notes available</td>
                             </tr>
                         )}
                         </tbody>

@@ -1,14 +1,14 @@
 package ch.bbw.pr.tresorbackend.dto;
 
 import jakarta.validation.constraints.NotEmpty;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
-@AllArgsConstructor
+@SuperBuilder
 @NoArgsConstructor
 public class CreditCardSecretDto extends SecretDto {
     @NotEmpty
@@ -27,11 +27,12 @@ public class CreditCardSecretDto extends SecretDto {
 
     @Override
     protected CreditCardSecretDto copy() {
-        return new CreditCardSecretDto(
-                this.getCardType(),
-                this.getCardNumber(),
-                this.getExpiration(),
-                this.getCvv()
-        );
+        return CreditCardSecretDto.builder()
+                .id(this.getId())
+                .cardType(this.getCardType())
+                .cardNumber(this.getCardNumber())
+                .expiration(this.getExpiration())
+                .cvv(this.getCvv())
+                .build();
     }
 }
