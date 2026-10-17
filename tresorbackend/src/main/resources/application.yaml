@@ -1,3 +1,9 @@
+app:
+  initial-admin:
+    first-name: ${ADMIN_FIRST_NAME}
+    last-name: ${ADMIN_LAST_NAME}
+    email: ${ADMIN_EMAIL}
+    password: ${ADMIN_PASSWORD}
 spring:
   application:
     name: tresorbackend
@@ -6,7 +12,7 @@ spring:
       host: ${REDIS_HOST}
       password: ${REDIS_PASSWORD}
       port: 6379
-      username: ${REDIS_USER}
+      username: default
   datasource:
     url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DATABASE}
     driver-class-name: org.postgresql.Driver
