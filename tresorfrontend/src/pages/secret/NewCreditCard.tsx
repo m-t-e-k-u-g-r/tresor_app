@@ -60,7 +60,7 @@ function NewCreditCard() {
                                 onChange={(e) =>
                                     setCreditCardValues((prevValues) => ({
                                         ...prevValues,
-                                        cardtype: e.target.value,
+                                        cardType: e.target.value,
                                     }))}
                                 required
                             >
@@ -77,7 +77,7 @@ function NewCreditCard() {
                                 type="text"
                                 value={creditCardValues.cardNumber}
                                 onChange={(e) =>
-                                    setCreditCardValues(prevValues => ({...prevValues, cardnumber: e.target.value}))}
+                                    setCreditCardValues(prevValues => ({...prevValues, cardNumber: e.target.value}))}
                                 required
                                 placeholder="Please enter cardnumber"
                             />

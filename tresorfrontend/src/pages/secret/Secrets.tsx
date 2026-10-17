@@ -90,6 +90,7 @@ const Secrets = () => {
                             <th>Card Number</th>
                             <th>Expiration</th>
                             <th>CVV</th>
+                            <th>Edit</th>
                             <th>Delete</th>
                         </tr>
                         </thead>
@@ -112,7 +113,7 @@ const Secrets = () => {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={6}>No credit cards available</td>
+                                <td colSpan={7}>No credit cards available</td>
                             </tr>
                         )}
                         </tbody>
@@ -127,6 +128,7 @@ const Secrets = () => {
                                 <th>Id</th>
                                 <th>Title</th>
                                 <th>Content</th>
+                                <th>Edit</th>
                                 <th>Delete</th>
                             </tr>
                         </thead>
@@ -147,7 +149,7 @@ const Secrets = () => {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={4}>No notes available</td>
+                                <td colSpan={5}>No notes available</td>
                             </tr>
                         )}
                         </tbody>
