@@ -1,6 +1,7 @@
 package ch.bbw.pr.tresorbackend.config;
 
 
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -35,6 +36,15 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                        .requestMatchers(
+                                "/",
+                                "/index.html",
+                                "/favicon.ico",
+                                "/manifest.json",
+                                "/static/**",
+                                "/logo*.png"
+                        ).permitAll()
                         .requestMatchers("/api/users/new", "/api/users/login", "/api/auth/csrf").permitAll()
                         .requestMatchers("/api/users/all", "/api/users/byemail", "/api/secrets/all").hasRole("ADMIN")
                         .anyRequest().authenticated()
