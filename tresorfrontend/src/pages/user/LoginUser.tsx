@@ -17,8 +17,12 @@ export default function LoginUser() {
         console.log(loginValues);
         setErrorMessage('');
 
-        await login();
-        navigate('/');
+        const success = await login();
+        if (success) {
+            navigate('/');
+        } else {
+            setErrorMessage("Failed to log in");
+        }
     };
 
     return (

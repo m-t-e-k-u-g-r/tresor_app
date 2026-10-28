@@ -10,8 +10,8 @@ interface LoginContextType {
     checkLogin: () => Promise<void>;
     loginValues: Login;
     updateLogin: (login: Login) => void;
-    signup: (request: SignupRequest) => Promise<void>;
-    login: () => Promise<void>;
+    signup: (request: SignupRequest) => Promise<boolean>;
+    login: () => Promise<boolean>;
     userId: number | null;
     isAdmin: boolean;
 }
@@ -47,12 +47,12 @@ export function LoginProvider({ children }: { children: ReactNode }) {
         setLoginValues(login);
     }
 
-    async function signup(req: SignupRequest) {
+    async function signup(req: SignupRequest): Promise<boolean> {
         if (req.password !== req.passwordConfirmation) throw Error("Invalid password confirmation");
         const API_URL = getApiUrl();
 
         try {
-            if (csrfToken == null) return;
+            if (csrfToken == null) return false;
             const response = await fetch(`${API_URL}/users/new`, {
                 method: 'POST',
                 headers: {
@@ -70,18 +70,20 @@ export function LoginProvider({ children }: { children: ReactNode }) {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Server response failed.');
+                console.error(errorData);
+                return false;
             }
+            return true;
         } catch (error: any) {
             console.error('Failed to post user:', error.message);
-            throw new Error('Failed to save user. ' || error.message);
+            return false
         }
     }
 
-    async function login() {
+    async function login(): Promise<boolean> {
         const API_URL = getApiUrl();
         try {
-            if (csrfToken == null) return;
+            if (csrfToken == null) return false;
             const response = await fetch(`${API_URL}/users/login`, {
                 method: 'POST',
                 headers: {
@@ -101,9 +103,10 @@ export function LoginProvider({ children }: { children: ReactNode }) {
             console.log('User successfully logged in:', data);
             setUserId(data.userId);
             setIsAdmin(data.admin);
+            return true;
         } catch (error: any) {
             console.error('Failed to login user:', error.message);
-            throw new Error('Failed to login user. ' + error.message);
+            return false;
         }
     }
 

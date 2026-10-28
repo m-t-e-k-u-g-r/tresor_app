@@ -33,9 +33,13 @@ function RegisterUser() {
             return;
         }
 
-        await signup(credentials);
-        setCredentials(initialState);
-        navigate('/');
+        const success = await signup(credentials);
+        if (success) {
+            setCredentials(initialState);
+            navigate('/');
+        } else {
+            setErrorMessage("Failed to sign up")
+        }
     };
 
     return (
