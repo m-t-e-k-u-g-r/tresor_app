@@ -1,0 +1,53 @@
+@startuml
+autonumber
+
+actor Client as C
+participant "UserController" as UC
+participant "PasswordEncryptService" as PES
+participant "EncryptionProperties" as EP
+participant "Mac\n(HmacSHA256)" as HMAC
+participant "BCryptPasswordEncoder" as BCrypt
+database "Database" as DB
+
+== Password Hashing (User Registration) ==
+
+C -> UC : POST /api/users/new
+UC -> PES : Encode password
+PES -> EP : Get pepper
+PES <- EP : Return pepper
+PES -> HMAC : Add pepper to password
+PES <- HMAC : Return password with pepper
+PES -> BCrypt : Hash password
+PES <- BCrypt : Return hashed password
+UC <- PES : Return result
+alt Exception
+    C <- UC : Throw Exception
+else
+    C <- UC : Return Accepted
+end
+
+||60||
+== Password Verification (Login / Authentication) ==
+autonumber
+
+C ->  UC : POST /api/users/login
+UC -> DB : Get user
+UC <- DB : Return user with password hash
+alt null
+    C <- UC : Not found
+end
+UC -> PES : Match password
+PES -> EP : Get pepper
+PES <- EP : Return pepper
+PES -> HMAC : Add pepper to password
+PES <- HMAC : Return password with pepper
+PES -> BCrypt : Match password
+PES <- BCrypt : Return result
+UC <- PES : Return boolean
+alt Valid
+    C <- UC : Return ok
+else Invalid
+    C <- UC : Return unauthorized
+end
+
+@enduml

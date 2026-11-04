@@ -1,0 +1,92 @@
+@startuml
+autonumber
+
+actor Client as C
+participant "SecretController" as SC
+participant "SecretEncryptionService" as SES
+participant "EncryptionProperties" as EP
+participant "SecretKeyFactory\n(PBKDF2WithHmacSHA256)" as SKF
+participant "SecretDto" as SDTO
+participant "EncryptUtil" as EU
+participant "Cipher\n(AES/GCM/NoPadding)" as Cipher
+participant "SecretService" as SS
+database "Database" as DB
+
+== Secret Encryption (Create / Update Secret) ==
+
+alt Create
+    C -> SC : POST /api/secrets/new
+else Update
+    C -> SC : PUT /api/secrets/{TYPE}/{ID}
+    SC -> SS : Get secret by ID and user ID
+    SS -> DB : Get secret from DB
+    SS <- DB : Return secret
+    SC <- SS : Return secret
+    alt null
+        C <- SC : Return bad request
+    end
+    SC -> SES : Decrypt secret
+    SC <- SES : Return result
+    alt Exception
+        C <- SC : Return unauthorized
+    end
+end
+SC -> SES : Encrypt secret
+SES -> EP : Get master-key
+SES <- EP : Return master-key
+SES -> SKF : Generate encryption key
+SES <- SKF : Return encryption key
+SES -> SDTO : Transform
+SDTO -> EU : Encrypt
+EU -> Cipher : Get instance
+EU <- Cipher : Return instance
+EU -> Cipher : Get IV
+EU <- Cipher : Return IV
+EU -> Cipher : Encrypt data
+EU <- Cipher : Return encrypted
+SDTO <- EU : Return encrypted
+SES <- SDTO : Return encrypted
+SC <- SES : Return encrypted secret
+alt Create
+    SC -> SS : Create secret
+    SS -> DB : Create secret
+else Update
+    SC -> SS : Update secret
+    SS -> DB : Update secret
+end
+SS <- DB : Return ok
+SC <- SS : Return ok
+C <- SC : Return accepted
+
+||60||
+== Secret Decryption (Get Secrets) ==
+autonumber
+
+C -> SC : GET /api/secrets
+SC -> SS : Get secrets
+SS -> DB : Get secrets
+SS <- DB : Return secrets
+SC <- SS : Return secrets
+loop all secrets
+    SC -> SES : Decrypt secret
+    SES -> EP : Get master-key
+    SES <- EP : Return master-key
+    SES -> SKF : Generate encryption key
+    SES <- SKF : Return encryption key
+    SES -> SDTO : Transform
+    SDTO -> EU : Decrypt
+    EU -> Cipher : Get instance
+    EU <- Cipher : Return instance
+    EU -> Cipher : Get IV
+    EU <- Cipher : Return IV
+    SDTO <- EU : Return decrypted
+    SES <- SDTO : Return decrypted
+    SC <- SES : Return decrypted secret
+end
+alt
+    C <- SC : Return decrypted secrets
+else Exception
+    C <- SC : Return internal server error
+end
+
+@enduml
