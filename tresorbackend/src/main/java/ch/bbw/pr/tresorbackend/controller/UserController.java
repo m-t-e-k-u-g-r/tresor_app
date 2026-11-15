@@ -4,6 +4,7 @@ import ch.bbw.pr.tresorbackend.dto.*;
 import ch.bbw.pr.tresorbackend.entities.User;
 import ch.bbw.pr.tresorbackend.mappers.UserMapper;
 import ch.bbw.pr.tresorbackend.repository.UserRoleRepository;
+import ch.bbw.pr.tresorbackend.service.CaptchaService;
 import ch.bbw.pr.tresorbackend.service.KeyService;
 import ch.bbw.pr.tresorbackend.service.PasswordEncryptService;
 import ch.bbw.pr.tresorbackend.service.UserService;
@@ -47,6 +48,7 @@ import java.util.Map;
 @RequestMapping("api/users")
 public class UserController {
 
+   private final CaptchaService captchaService;
    private final ErrorHandler errorHandler;
    private final UserMapper userMapper;
    private final AuthenticationManager authenticationManager;
@@ -66,7 +68,10 @@ public class UserController {
            BindingResult bindingResult
    ) {
       //captcha
-      //todo add implementation
+      if (!captchaService.verifyCaptcha(registerUser.recaptchaToken())) {
+         log.info("Invalid reCAPTCHA token");
+         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid reCAPTCHA token");
+      }
 
       log.info("UserController.createUser: captcha passed.");
 
@@ -74,6 +79,10 @@ public class UserController {
       if (bindingResult.hasErrors()) return errorHandler.handleErrors(bindingResult, "UserController.createUser");
       log.info("UserController.createUser: input validation passed");
 
+      if (!registerUser.password().equals(registerUser.passwordConfirmation())) {
+         log.info("UserController.createUser: Password confirmation wrong");
+         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid password confirmation");
+      }
       log.info("UserController.createUser, password validation passed");
 
       User user = userMapper.toEntity(registerUser);

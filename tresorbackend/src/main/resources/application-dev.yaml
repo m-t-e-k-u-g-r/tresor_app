@@ -7,6 +7,8 @@ spring:
       password: redis_dev_pwd
       port: 6379
       username: default
+  captcha:
+    key: ${RECAPTCHA_KEY}
   datasource:
     url: jdbc:postgresql://database:5432/devdb
     driver-class-name: org.postgresql.Driver
