@@ -45,7 +45,7 @@ public class SecurityConfig {
                                 "/static/**",
                                 "/logo*.png"
                         ).permitAll()
-                        .requestMatchers("/api/users/new", "/api/users/login", "/api/auth/csrf").permitAll()
+                        .requestMatchers("/api/users/new", "/api/users/login", "/api/auth/csrf", "/api/auth/change-password").permitAll()
                         .requestMatchers("/api/users/all", "/api/users/byemail", "/api/secrets/all").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
