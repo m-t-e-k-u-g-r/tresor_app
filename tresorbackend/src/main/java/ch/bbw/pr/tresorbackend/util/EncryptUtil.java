@@ -1,5 +1,7 @@
 package ch.bbw.pr.tresorbackend.util;
 
+import lombok.AllArgsConstructor;
+
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
@@ -13,13 +15,10 @@ import java.util.Base64;
  * Not implemented yet.
  * @author Peter Rutschmann
  */
+@AllArgsConstructor
 public class EncryptUtil {
    private static final String ENCRYPTION_ALGORITHM = "AES/GCM/NoPadding";
    private final SecretKey secretKey;
-
-   public EncryptUtil(SecretKey secretKey) {
-      this.secretKey = secretKey;
-   }
 
    public String encrypt(String data) throws RuntimeException {
       try {
