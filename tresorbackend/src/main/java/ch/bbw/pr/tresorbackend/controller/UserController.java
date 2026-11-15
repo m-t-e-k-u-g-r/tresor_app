@@ -4,10 +4,12 @@ import ch.bbw.pr.tresorbackend.dto.*;
 import ch.bbw.pr.tresorbackend.entities.User;
 import ch.bbw.pr.tresorbackend.mappers.UserMapper;
 import ch.bbw.pr.tresorbackend.repository.UserRoleRepository;
+import ch.bbw.pr.tresorbackend.service.KeyService;
 import ch.bbw.pr.tresorbackend.service.PasswordEncryptService;
 import ch.bbw.pr.tresorbackend.service.UserService;
-
+import ch.bbw.pr.tresorbackend.util.EncryptUtil;
 import ch.bbw.pr.tresorbackend.util.ErrorHandler;
+import ch.bbw.pr.tresorbackend.util.SaltUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,7 +31,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.security.SecureRandom;
+import javax.crypto.SecretKey;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -49,10 +52,12 @@ public class UserController {
    private final AuthenticationManager authenticationManager;
    private final UserService userService;
    private final PasswordEncryptService passwordService;
+   private final SaltUtil saltUtil;
    private final SecurityContextHolderStrategy securityContextHolderStrategy =
            SecurityContextHolder.getContextHolderStrategy();
    private final SecurityContextRepository securityContextRepository;
    private final UserRoleRepository userRoleRepository;
+    private final KeyService keyService;
 
    // build create User REST API
    @PostMapping("new")
@@ -72,14 +77,18 @@ public class UserController {
       log.info("UserController.createUser, password validation passed");
 
       User user = userMapper.toEntity(registerUser);
-      byte[] salt = new byte[32];
-      SecureRandom secureRandom = new SecureRandom();
-      secureRandom.nextBytes(salt);
+      byte[] salt = saltUtil.generateSalt();
 
       user.setSalt(Base64.getEncoder().encodeToString(salt));
       user.setUserRole(userRoleRepository.findById(2).orElseThrow());
+
+      SecretKey key = keyService.getRandomKey();
+      String encodedKey = Base64.getEncoder().encodeToString(key.getEncoded());
+      EncryptUtil encryptUtil = new EncryptUtil(keyService.deriveKey(registerUser.password(), Arrays.toString(salt)));
+      String encryptedKey = encryptUtil.encrypt(encodedKey);
+      user.setEncryptedKey(encryptedKey);
       try {
-         user.setPassword(passwordService.encode(registerUser.getPassword()));
+         user.setPassword(passwordService.encode(registerUser.password()));
       } catch (Exception e) {
          log.error("UserController.createUser failed to hash password");
          throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);

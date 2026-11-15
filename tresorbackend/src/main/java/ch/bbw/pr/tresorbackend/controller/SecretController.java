@@ -2,6 +2,7 @@ package ch.bbw.pr.tresorbackend.controller;
 
 import ch.bbw.pr.tresorbackend.dto.*;
 import ch.bbw.pr.tresorbackend.entities.User;
+import ch.bbw.pr.tresorbackend.service.KeyService;
 import ch.bbw.pr.tresorbackend.service.SecretEncryptionService;
 import ch.bbw.pr.tresorbackend.service.SecretService;
 import ch.bbw.pr.tresorbackend.service.UserService;
@@ -17,8 +18,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.crypto.SecretKey;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * SecretController
@@ -31,6 +34,7 @@ import java.util.Map;
 public class SecretController {
 
    private final UserService userService;
+   private final KeyService keyService;
    private SecretService secretService;
    private SecretEncryptionService encryptionService;
    private ErrorHandler errorHandler;
@@ -47,7 +51,8 @@ public class SecretController {
       log.info("SecretController.createSecret, input validation passed");
 
       User user = userDetails.getUser();
-      SecretDto encrypted = encryptionService.encryptSecret(secretDto, user.getSalt());
+      SecretKey key = keyService.getEncryptionKey(userDetails.getPassword(), user.getSalt(), user.getEncryptedKey());
+      SecretDto encrypted = encryptionService.encryptSecret(secretDto, key);
       secretService.createSecret(user, encrypted);
 
       log.info("SecretController.createSecret, secret saved in db");
@@ -59,7 +64,10 @@ public class SecretController {
    // Build Get Secrets by userId REST API
    @GetMapping("/byuserid/{userId}")
    @PreAuthorize("@authz.isAdminOrOwner(#userId, authentication)")
-   public ResponseEntity<List<SecretDto>> getSecretsByUserId(@PathVariable Integer userId) {
+   public ResponseEntity<List<SecretDto>> getSecretsByUserId(
+           @PathVariable Integer userId,
+           @AuthenticationPrincipal CustomUserDetails userDetails
+   ) {
       User user = userService.getUserById(userId);
       if (user == null) return ResponseEntity.notFound().build();
 
@@ -68,10 +76,12 @@ public class SecretController {
          log.info("SecretController.getSecretsByUserId secret isEmpty");
          return ResponseEntity.notFound().build();
       }
-      List<SecretDto> decrypted = secrets
-              .stream().map(s -> encryptionService.decryptSecret(s, user.getSalt()))
-              .toList();
-      return ResponseEntity.ok(decrypted);
+
+      if (Objects.equals(userDetails.getUser().getId(), userId)) {
+         SecretKey key = keyService.getEncryptionKey(userDetails.getPassword(), user.getSalt(), user.getEncryptedKey());
+         secrets.forEach(s -> encryptionService.decryptSecret(s, key));
+      }
+      return ResponseEntity.ok(secrets);
    }
 
    // Build Get Secrets by email REST API
@@ -86,8 +96,9 @@ public class SecretController {
          return ResponseEntity.noContent().build();
       }
       try {
+         SecretKey key = keyService.getEncryptionKey(userDetails.getPassword(), user.getSalt(), user.getEncryptedKey());
          List<SecretDto> decrypted = secrets
-                 .stream().map(s -> encryptionService.decryptSecret(s, user.getSalt()))
+                 .stream().map(s -> encryptionService.decryptSecret(s, key))
                  .toList();
          return ResponseEntity.ok(decrypted);
       } catch (Exception e) {
@@ -123,6 +134,7 @@ public class SecretController {
 
       User user = userDetails.getUser();
       SecretDto dbSecret = secretService.getSecretByIdAndUserId(type, secretId, user.getId());
+      SecretKey key = keyService.getEncryptionKey(userDetails.getPassword(), user.getSalt(), user.getEncryptedKey());
       if(dbSecret == null){
          log.info("SecretController.updateSecret, secret not found in db");
          String json = new Gson().toJson(Map.of("answer", "Secret not found in db"));
@@ -130,11 +142,11 @@ public class SecretController {
          return ResponseEntity.badRequest().body(json);
       }
       try {
-         encryptionService.decryptSecret(dbSecret, user.getSalt());
+         encryptionService.decryptSecret(dbSecret, key);
       } catch (RuntimeException e) {
          return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
       }
-      SecretDto encrypted = encryptionService.encryptSecret(secretDto, user.getSalt());
+      SecretDto encrypted = encryptionService.encryptSecret(secretDto, key);
       secretService.updateSecretByIdAndUserId(type, secretId, user.getId(), encrypted);
 
       log.info("SecretController.updateSecret, secret updated in db");
