@@ -1,39 +1,30 @@
 package ch.bbw.pr.tresorbackend.controller;
 
+import ch.bbw.pr.tresorbackend.config.EncryptionProperties;
 import ch.bbw.pr.tresorbackend.dto.*;
 import ch.bbw.pr.tresorbackend.entities.User;
 import ch.bbw.pr.tresorbackend.mappers.UserMapper;
 import ch.bbw.pr.tresorbackend.repository.UserRoleRepository;
-import ch.bbw.pr.tresorbackend.service.CaptchaService;
-import ch.bbw.pr.tresorbackend.service.KeyService;
-import ch.bbw.pr.tresorbackend.service.PasswordEncryptService;
-import ch.bbw.pr.tresorbackend.service.UserService;
+import ch.bbw.pr.tresorbackend.service.*;
 import ch.bbw.pr.tresorbackend.util.EncryptUtil;
 import ch.bbw.pr.tresorbackend.util.ErrorHandler;
 import ch.bbw.pr.tresorbackend.util.SaltUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextHolderStrategy;
-import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.crypto.SecretKey;
-import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -49,17 +40,15 @@ import java.util.Map;
 public class UserController {
 
    private final CaptchaService captchaService;
+   private EncryptionProperties encryptionProperties;
    private final ErrorHandler errorHandler;
    private final UserMapper userMapper;
-   private final AuthenticationManager authenticationManager;
    private final UserService userService;
    private final PasswordEncryptService passwordService;
    private final SaltUtil saltUtil;
-   private final SecurityContextHolderStrategy securityContextHolderStrategy =
-           SecurityContextHolder.getContextHolderStrategy();
-   private final SecurityContextRepository securityContextRepository;
    private final UserRoleRepository userRoleRepository;
-    private final KeyService keyService;
+   private final KeyService keyService;
+    private final JwtService jwtService;
 
    // build create User REST API
    @PostMapping("new")
@@ -91,17 +80,13 @@ public class UserController {
       user.setSalt(Base64.getEncoder().encodeToString(salt));
       user.setUserRole(userRoleRepository.findById(2).orElseThrow());
 
-      SecretKey key = keyService.getRandomKey();
-      String encodedKey = Base64.getEncoder().encodeToString(key.getEncoded());
-      EncryptUtil encryptUtil = new EncryptUtil(keyService.deriveKey(registerUser.password(), Arrays.toString(salt)));
-      String encryptedKey = encryptUtil.encrypt(encodedKey);
-      user.setEncryptedKey(encryptedKey);
       try {
          user.setPassword(passwordService.encode(registerUser.password()));
       } catch (Exception e) {
          log.error("UserController.createUser failed to hash password");
          throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
       }
+      keyService.setDEK(user, registerUser.password());
       User savedUser = userService.createUser(user);
       JsonObject obj = new JsonObject();
       HttpStatus status;
@@ -190,29 +175,32 @@ public class UserController {
    // simple login with no websecurity, just name and password
    @PostMapping("/login")
    public ResponseEntity<AuthResponse> doLoginUser(
-           HttpServletRequest request,
-           HttpServletResponse response,
-           @RequestBody LoginUser loginUser
+           @AuthenticationPrincipal CustomUserDetails userDetails,
+           @RequestHeader("Authorization") String basicAuth
    ) {
-      log.info("UserController.doLoginUser: {}", loginUser);
+      User user = userDetails.getUser();
+      String decoded = new String(
+              Base64.getDecoder().decode(basicAuth.substring(6)),
+              StandardCharsets.UTF_8
+      );
+      int separator = decoded.indexOf(':');
+      if (separator < 0) throw new IllegalArgumentException("Invalid credentials");
+      String password = decoded.substring(separator + 1);
+      handleKeyUpdate(user, password);
 
-      UsernamePasswordAuthenticationToken authReq =
-              new UsernamePasswordAuthenticationToken(loginUser.getEmail(), loginUser.getPassword());
-
-      Authentication authResult = authenticationManager.authenticate(authReq);
-
-      SecurityContext context = securityContextHolderStrategy.createEmptyContext();
-      context.setAuthentication(authResult);
-      securityContextHolderStrategy.setContext(context);
-
-      securityContextRepository.saveContext(context, request, response);
-
-      User user = userService.findByEmail(loginUser.getEmail());
-      log.info("UserController.doLoginUser: login successful");
-      log.info("UserController.doLoginUser: {}", context.getAuthentication().getAuthorities().stream().findFirst());
-      boolean isAdmin = context.getAuthentication().getAuthorities().stream()
-              .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-      return ResponseEntity.ok(new AuthResponse(user.getId(), isAdmin));
+      boolean isAdmin = userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+      SecretKey kek = keyService.deriveKey(password, user.getSalt());
+      EncryptUtil encryptUtil = new EncryptUtil(keyService.decodeKey(encryptionProperties.getMasterKey()));
+      String encryptedKEK = encryptUtil.encrypt(keyService.encodeKey(kek));
+      String token = jwtService.generateToken(user.getEmail(), encryptedKEK);
+      return ResponseEntity.ok()
+              .body(new AuthResponse(user.getId(), user.getEmail(), isAdmin, token));
    }
 
+   private void handleKeyUpdate(User user, String password) {
+      boolean updateRequired = user.getEncryptedDek() == null;
+      if (updateRequired) {
+         keyService.setDEK(user, password);
+      }
+   }
 }
