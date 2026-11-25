@@ -2,15 +2,16 @@ package ch.bbw.pr.tresorbackend;
 
 import ch.bbw.pr.tresorbackend.entities.User;
 import ch.bbw.pr.tresorbackend.repository.UserRoleRepository;
+import ch.bbw.pr.tresorbackend.service.KeyService;
 import ch.bbw.pr.tresorbackend.service.PasswordEncryptService;
 import ch.bbw.pr.tresorbackend.service.UserService;
+import ch.bbw.pr.tresorbackend.util.SaltUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
-import java.security.SecureRandom;
 import java.util.Base64;
 
 @Component
@@ -20,6 +21,8 @@ public class DatabaseSeeder implements ApplicationRunner {
     private final UserService userService;
     private final PasswordEncryptService passwordEncryptService;
     private final UserRoleRepository userRoleRepository;
+    private final SaltUtil saltUtil;
+    private final KeyService keyService;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -30,9 +33,7 @@ public class DatabaseSeeder implements ApplicationRunner {
         String password = env.getProperty(adminKey + ".password");
         String hashed = passwordEncryptService.encode(password);
 
-        byte[] salt = new byte[32];
-        SecureRandom secureRandom = new SecureRandom();
-        secureRandom.nextBytes(salt);
+        byte[] salt = saltUtil.generateSalt();
 
         User user = User.builder()
                 .email(env.getProperty(adminKey + ".email"))
@@ -43,6 +44,8 @@ public class DatabaseSeeder implements ApplicationRunner {
                 .userRole(userRoleRepository.findByRole("ADMIN")
                         .orElseThrow(() -> new RuntimeException("Failed to get admin role")))
                 .build();
+
+        keyService.setDEK(user, password);
 
         User created = userService.createUser(user);
         if (created == null) throw new RuntimeException("Failed to save admin user");
