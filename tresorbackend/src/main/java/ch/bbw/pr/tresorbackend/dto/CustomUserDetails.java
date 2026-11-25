@@ -1,6 +1,7 @@
 package ch.bbw.pr.tresorbackend.dto;
 
 import ch.bbw.pr.tresorbackend.entities.User;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,6 +14,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class CustomUserDetails implements UserDetails {
+    @NotNull
     private User user;
 
     @Override

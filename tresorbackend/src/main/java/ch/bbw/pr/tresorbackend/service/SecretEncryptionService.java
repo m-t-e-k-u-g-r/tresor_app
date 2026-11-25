@@ -11,17 +11,17 @@ import javax.crypto.SecretKey;
 @Service
 @AllArgsConstructor
 public class SecretEncryptionService {
-    public SecretDto encryptSecret(SecretDto secret, SecretKey key) throws RuntimeException {
-        return handleSecret(secret, key, CryptOperation.ENCRYPTION);
+    public SecretDto encryptSecret(SecretDto secret, SecretKey dek) throws RuntimeException {
+        return handleSecret(secret, dek, CryptOperation.ENCRYPTION);
     }
 
-    public SecretDto decryptSecret(SecretDto secret, SecretKey key) throws RuntimeException {
-        return handleSecret(secret, key, CryptOperation.DECRYPTION);
+    public SecretDto decryptSecret(SecretDto secret, SecretKey dek) throws RuntimeException {
+        return handleSecret(secret, dek, CryptOperation.DECRYPTION);
     }
 
-    private SecretDto handleSecret(SecretDto secret, SecretKey key, CryptOperation operation) throws RuntimeException {
+    private SecretDto handleSecret(SecretDto secret, SecretKey dek, CryptOperation operation) throws RuntimeException {
         try {
-            EncryptUtil encryptUtil = new EncryptUtil(key);
+            EncryptUtil encryptUtil = new EncryptUtil(dek);
             return switch (operation) {
                 case ENCRYPTION -> secret.transform(encryptUtil::encrypt);
                 case DECRYPTION -> secret.transform(encryptUtil::decrypt);

@@ -26,7 +26,7 @@ public class EncryptUtil {
          cipher.init(Cipher.ENCRYPT_MODE, this.secretKey);
 
          byte[] iv = cipher.getIV();
-         byte[] encrypted = cipher.doFinal(data.getBytes());
+         byte[] encrypted = cipher.doFinal(data.getBytes(StandardCharsets.UTF_8));
 
          byte[] combined = new byte[iv.length + encrypted.length];
          System.arraycopy(iv, 0, combined, 0, iv.length);

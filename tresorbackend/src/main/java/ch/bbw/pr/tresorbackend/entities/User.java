@@ -44,8 +44,8 @@ public class User implements Serializable {
     @Column(name = "salt", nullable = false, columnDefinition = "CHAR(44)")
     private String salt;
 
-    @Column(name = "encrypted_key")
-    private String encryptedKey;
+    @Column(name = "encrypted_dek")
+    private String encryptedDek;
 
     @NotNull
     @Column(name = "password", nullable = false, length = Integer.MAX_VALUE)

@@ -10,7 +10,6 @@ import ch.bbw.pr.tresorbackend.service.SafeDbCall;
 import ch.bbw.pr.tresorbackend.service.UserService;
 
 import lombok.AllArgsConstructor;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -76,7 +75,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
    }
 
    @Override
-   public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+   public CustomUserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
       User user = findByEmail(email);
       if (user == null) throw new UsernameNotFoundException("No user with email " + email + " found");
 
