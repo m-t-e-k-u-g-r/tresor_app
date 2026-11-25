@@ -7,11 +7,12 @@ import ch.bbw.pr.tresorbackend.entities.User;
 import ch.bbw.pr.tresorbackend.repository.UserRepository;
 import ch.bbw.pr.tresorbackend.service.KeyService;
 import ch.bbw.pr.tresorbackend.service.PasswordEncryptService;
+import ch.bbw.pr.tresorbackend.service.SecretService;
 import ch.bbw.pr.tresorbackend.service.UserService;
 import ch.bbw.pr.tresorbackend.util.EncryptUtil;
 import ch.bbw.pr.tresorbackend.util.SaltUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.crypto.SecretKey;
 import java.util.Base64;
 
+@Slf4j
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/auth")
@@ -30,6 +32,7 @@ public class AuthController {
     private final PasswordEncryptService passwordEncryptService;
     private final KeyService keyService;
     private final SaltUtil saltUtil;
+    private final SecretService secretService;
     private final UserRepository userRepository;
 
     @GetMapping("/csrf")
@@ -45,7 +48,7 @@ public class AuthController {
         User user = userDetails.getUser();
         boolean isAdmin = userDetails.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        AuthResponse response = new AuthResponse(user.getId(), isAdmin);
+        AuthResponse response = new AuthResponse(user.getId(), user.getEmail(), isAdmin, null);
 
         return ResponseEntity.ok(response);
     }
@@ -60,16 +63,29 @@ public class AuthController {
 
         if (!passwordEncryptService.matches(request.oldPassword(), user.getPassword()))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        log.debug("Old password matches");
 
-        SecretKey key = keyService.getEncryptionKey(request.oldPassword(), user.getSalt(), user.getEncryptedKey());
-        String encodedKey = Base64.getEncoder().encodeToString(key.getEncoded());
+        String newPasswordHash = passwordEncryptService.encode(request.newPassword());
+
+        if (user.getEncryptedDek() == null) {
+            user.setPassword(newPasswordHash);
+            keyService.setDEK(user, request.newPassword());
+            userRepository.save(user);
+            return ResponseEntity.ok().build();
+        }
+
+        SecretKey dek = keyService.getDEK(request.oldPassword(), user.getSalt(), user.getEncryptedDek());
+        log.debug("Encryption key retrieved");
+        String encodedDEK = Base64.getEncoder().encodeToString(dek.getEncoded());
 
         byte[] newSalt = saltUtil.generateSalt();
         String saltString = Base64.getEncoder().encodeToString(newSalt);
         EncryptUtil encryptUtil = new EncryptUtil(keyService.deriveKey(request.newPassword(), saltString));
+        log.debug("New encryption key derived");
 
-        user.setEncryptedKey(encryptUtil.encrypt(encodedKey));
+        user.setEncryptedDek(encryptUtil.encrypt(encodedDEK));
         user.setSalt(saltString);
+        user.setPassword(newPasswordHash);
 
         userRepository.save(user);
 

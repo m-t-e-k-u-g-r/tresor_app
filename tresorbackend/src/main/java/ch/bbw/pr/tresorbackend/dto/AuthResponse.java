@@ -7,5 +7,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class AuthResponse {
     private Integer userId;
+    private String email;
     private boolean isAdmin;
+    private String token;
 }
