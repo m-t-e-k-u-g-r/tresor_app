@@ -8,4 +8,5 @@ import java.util.List;
 public interface CredentialSecretRepository extends JpaRepository<CredentialSecret, Long> {
     List<CredentialSecret> findAllByUser_Id(Integer userId);
     CredentialSecret findByIdAndUser_Id(Long id, Integer userId);
+    int deleteAllByUser_Id(Integer userId);
 }

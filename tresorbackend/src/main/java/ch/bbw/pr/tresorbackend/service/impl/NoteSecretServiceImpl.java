@@ -17,6 +17,11 @@ public class NoteSecretServiceImpl {
     private final NoteSecretRepository noteSecretRepository;
     private final NoteSecretMapper noteSecretMapper;
 
+    public int purgeSecretsByUserId(Integer userId) {
+        return SafeDbCall.safeDbCall(() -> noteSecretRepository
+                .deleteAllByUser_Id(userId), 0);
+    }
+
     public List<NoteSecretDto> getAllSecrets() {
         return SafeDbCall.safeDbCall(() -> noteSecretRepository
                 .findAll()

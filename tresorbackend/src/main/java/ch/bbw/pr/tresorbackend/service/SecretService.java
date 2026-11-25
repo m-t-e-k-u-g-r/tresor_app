@@ -26,6 +26,12 @@ public class SecretService {
         this.noteService = noteService;
     }
 
+    public int purgeSecretsByUserId(Integer userId) {
+        return creditCardService.purgeSecretsByUserId(userId) +
+                credentialService.purgeSecretsByUserId(userId) +
+                noteService.purgeSecretsByUserId(userId);
+    }
+
     public List<SecretDto> getAllSecrets() {
        List<SecretDto> result = new ArrayList<>();
 

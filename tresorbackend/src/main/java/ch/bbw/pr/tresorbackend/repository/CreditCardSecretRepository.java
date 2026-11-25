@@ -8,4 +8,5 @@ import java.util.List;
 public interface CreditCardSecretRepository extends JpaRepository<CreditcardSecret, Long> {
     List<CreditcardSecret> findAllByUser_Id(Integer userId);
     CreditcardSecret findByIdAndUser_Id(Long id, Integer userId);
+    int deleteAllByUser_Id(Integer userId);
 }

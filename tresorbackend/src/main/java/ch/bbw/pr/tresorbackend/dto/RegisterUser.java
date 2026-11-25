@@ -21,11 +21,11 @@ public record RegisterUser(
         String email,
 
         @NotEmpty (message="Password is required.")
-        @Pattern(regexp = "/^(?=.*?[0-9])(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[^0-9A-Za-z]).{8,32}$/")
+        @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[^0-9A-Za-z]).{8,32}$")
         String password,
 
         @NotEmpty (message="Password confirmation is required.")
-        @Pattern(regexp = "/^(?=.*?[0-9])(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[^0-9A-Za-z]).{8,32}$/")
+        @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[^0-9A-Za-z]).{8,32}$")
         String passwordConfirmation,
 
         @NotEmpty

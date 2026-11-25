@@ -17,6 +17,11 @@ public class CredentialSecretServiceImpl {
     private final CredentialSecretRepository credentialSecretRepository;
     private final CredentialSecretMapper credentialSecretMapper;
 
+    public int purgeSecretsByUserId(Integer userId) {
+        return SafeDbCall.safeDbCall(() -> credentialSecretRepository
+                .deleteAllByUser_Id(userId), 0);
+    }
+
     public List<CredentialSecretDto> getAllSecrets() {
         return SafeDbCall.safeDbCall(() -> credentialSecretRepository
                 .findAll()

@@ -16,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 
 import javax.crypto.SecretKey;
@@ -34,12 +33,6 @@ public class AuthController {
     private final SaltUtil saltUtil;
     private final SecretService secretService;
     private final UserRepository userRepository;
-
-    @GetMapping("/csrf")
-    public ResponseEntity<CsrfToken> getCsrfToken(HttpServletRequest request) {
-        CsrfToken token = (CsrfToken) request.getAttribute("_csrf");
-        return ResponseEntity.ok(token);
-    }
 
     @GetMapping("/check")
     public ResponseEntity<AuthResponse> checkAuth(
@@ -90,5 +83,16 @@ public class AuthController {
         userRepository.save(user);
 
         return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/account/delete")
+    public ResponseEntity<Integer> deleteAccount(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        userRepository.delete(userDetails.getUser());
+
+        int deleted = secretService.purgeSecretsByUserId(userDetails.getUser().getId());
+
+        return ResponseEntity.ok(deleted);
     }
 }

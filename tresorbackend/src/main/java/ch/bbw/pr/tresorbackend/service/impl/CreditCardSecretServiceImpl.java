@@ -17,6 +17,11 @@ public class CreditCardSecretServiceImpl {
     private final CreditCardSecretRepository creditCardSecretRepository;
     private final CreditCardSecretMapper creditCardSecretMapper;
 
+    public int purgeSecretsByUserId(Integer userId) {
+        return SafeDbCall.safeDbCall(() -> creditCardSecretRepository
+                .deleteAllByUser_Id(userId), 0);
+    }
+
     public List<CreditCardSecretDto> getAllSecrets() {
         return SafeDbCall.safeDbCall(() -> creditCardSecretRepository
                 .findAll()
