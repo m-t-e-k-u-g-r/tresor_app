@@ -1,30 +1,15 @@
-import {Outlet, Link, useNavigate} from "react-router-dom";
+import {Outlet, Link} from "react-router-dom";
 import {useLogin} from "../context/login-context";
 import {useEffect} from "react";
-import {useSecurity} from "../context/security-context";
 
 /**
  * Layout
  * @author Peter Rutschmann
  */
 const Layout = () => {
-    const navigate = useNavigate();
-    const { csrfToken } = useSecurity();
+    const { logout } = useLogin();
     const { checkLogin, loginValues, userId, isAdmin } = useLogin();
     const displayAdmin = userId != null && isAdmin;
-
-    function logout() {
-        if (!csrfToken) return;
-        fetch('/logout', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': csrfToken,
-            }
-        })
-            .then(r => {
-                if (r.ok) navigate('/');
-            });
-    }
 
     useEffect(() => {
         checkLogin();
@@ -34,6 +19,7 @@ const Layout = () => {
         if (userId != null) {
             return (
                 <ul>
+                    <li><Link to="/user/changepassword">Change password</Link></li>
                     <li><a onClick={() => logout()}>logout</a></li>
                 </ul>
             )

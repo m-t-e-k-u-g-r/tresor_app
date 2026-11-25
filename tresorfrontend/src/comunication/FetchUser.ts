@@ -5,14 +5,15 @@
 import {getApiUrl} from "./api-url";
 
 
-export const getUsers = async () => {
+export const getUsers = async (jwt: string | null) => {
     const API_URL = getApiUrl();
 
     try {
         const response = await fetch(`${API_URL}/users/all`, {
             method: 'Get',
             headers: {
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${jwt}`
             }
         });
 

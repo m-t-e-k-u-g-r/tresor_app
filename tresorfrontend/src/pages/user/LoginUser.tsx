@@ -14,7 +14,6 @@ export default function LoginUser() {
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
-        console.log(loginValues);
         setErrorMessage('');
 
         const success = await login();

@@ -9,14 +9,14 @@ import {useLogin} from "../../context/login-context";
  * @author Peter Rutschmann
  */
 const Users = () => {
-    const { loginValues } = useLogin();
+    const { loginValues, jwt } = useLogin();
     const [users, setUsers] = useState<User[]>([]);
     const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const users = await getUsers();
+                const users = await getUsers(jwt);
                 console.log(users);
                 setUsers(users);
                 // TODO: change error type

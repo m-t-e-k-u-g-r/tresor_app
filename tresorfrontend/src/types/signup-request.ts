@@ -5,6 +5,7 @@ export interface SignupRequest {
     email: string;
     password: string;
     passwordConfirmation: string;
+    captchaToken?: string;
 }
 
 export interface SignupForm extends SignupRequest {

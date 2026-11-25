@@ -1,9 +1,9 @@
 import {createContext, ReactNode, useContext, useState} from "react";
 import {CreateSecret, CredentialSecret, CreditCardSecret, NoteSecret, Secret} from "../types/secret";
 import {getApiUrl} from "../comunication/api-url";
-import {useSecurity} from "./security-context";
 import {SecretType} from "../types/secret-type";
 import {useNavigate} from "react-router-dom";
+import {useLogin} from "./login-context";
 
 interface SecretContextType {
     secrets: Secret[];
@@ -24,18 +24,17 @@ export function SecretProvider({ children }: { children: ReactNode }) {
     const [editCredential, setEditCredential] = useState<CredentialSecret | null>(null);
     const [editCreditCard, setEditCreditCard] = useState<CreditCardSecret | null>(null);
     const [editNote, setEditNote] = useState<NoteSecret | null>(null);
-    const { csrfToken } = useSecurity();
+    const { jwt } = useLogin();
     const navigate = useNavigate();
 
     async function loadSecrets() {
         const API_URL = getApiUrl();
 
         try {
-            if (csrfToken == null) return;
             const response = await fetch(`${API_URL}/secrets`, {
                 method: 'GET',
                 headers: {
-                    'X-CSRF-TOKEN': csrfToken,
+                    'Authorization': `Bearer ${jwt}`,
                     'Content-Type': 'application/json'
                 }
             });
@@ -61,11 +60,10 @@ export function SecretProvider({ children }: { children: ReactNode }) {
         const API_URL = getApiUrl();
 
         try {
-            if (csrfToken == null) return;
             const response = await fetch(`${API_URL}/secrets/new`, {
                 method: 'POST',
                 headers: {
-                    'X-CSRF-TOKEN': csrfToken,
+                    'Authorization': `Bearer ${jwt}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
@@ -112,12 +110,11 @@ export function SecretProvider({ children }: { children: ReactNode }) {
         const API_URL = getApiUrl();
 
         try {
-            if (csrfToken == null) return;
             const type = SecretType[kind];
             const response = await fetch(`${API_URL}/secrets/${type}/${id}`, {
                 method: 'PUT',
                 headers: {
-                    'X-CSRF-TOKEN': csrfToken,
+                    'Authorization': `Bearer ${jwt}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
@@ -160,12 +157,11 @@ export function SecretProvider({ children }: { children: ReactNode }) {
         const API_URL = getApiUrl();
 
         try {
-            if (csrfToken == null) return;
             const type = SecretType[kind];
             const response = await fetch(`${API_URL}/secrets/${type}/${id}`, {
                 method: 'DELETE',
                 headers: {
-                    'X-CSRF-TOKEN': csrfToken,
+                    'Authorization': `Bearer ${jwt}`,
                     'Content-Type': 'application/json'
                 },
             });
