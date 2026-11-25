@@ -1,0 +1,47 @@
+@startuml
+autonumber
+
+actor User as U
+participant Client as C
+participant "react-google-recaptcha" as rgc
+participant "UserController" as UC
+participant "Jakarta Validation" as JV
+participant "CaptchaService" as CS
+participant "reCAPTCHA" as RCP
+
+== Set CAPTCHA ==
+
+U -> C : Click checkbox / solve CAPTCHA
+C -> rgc : Validate input
+C <-- rgc : Result
+alt ok
+C -> C : Set Token
+end
+
+== Signup ==
+autonumber
+
+U -> C : Enter password
+C -> C : Check password strength
+alt password ok
+    C -> UC : POST /api/users/new
+    UC -> JV : Check password strength by pattern
+    UC <-- JV : Return pattern match
+    alt password not strong enough
+        C <-- UC : Return error
+        U <-- C : Display error message
+    end
+    UC -> CS : verifyCaptcha(String token)
+    CS -> RCP : POST /recaptcha/api/siteverify
+    CS <-- RCP : CAPTCHA result
+    UC <-- CS : Boolean CAPTCHA valid
+    alt valid
+        UC -> UC : Check if password matches confirmation
+    else invalid
+        C <-- UC : BAD REQUEST
+    end
+else password too weak
+    U <-- C : Display error message
+end
+
+@enduml
