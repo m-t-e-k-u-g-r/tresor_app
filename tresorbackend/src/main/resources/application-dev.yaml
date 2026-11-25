@@ -1,12 +1,6 @@
 spring:
   application:
     name: tresorbackend
-  data:
-    redis:
-      host: redis
-      password: redis_dev_pwd
-      port: 6379
-      username: default
   captcha:
     key: ${RECAPTCHA_KEY}
   datasource:
