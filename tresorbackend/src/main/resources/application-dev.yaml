@@ -20,5 +20,5 @@ spring:
     init:
       mode: never
 encryption:
-  master-key: super_secret_development_encryption_key
+  master-key: QsW2RHr+O/lAc+toYPoXTjxBW6E/kdjhpdjCbFcaHKA=
   pepper: development_pepper

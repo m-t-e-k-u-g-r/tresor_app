@@ -26,3 +26,5 @@ spring:
 encryption:
   master-key: ${ENCRYPTION_KEY}
   pepper: ${PEPPER}
+jwt:
+  signing-key: ${JWT_SIGNING_KEY}
